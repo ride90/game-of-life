@@ -1,0 +1,3 @@
+### GET Root
+GET http://localhost:4000
+Accept: application/json
