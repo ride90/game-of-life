@@ -1,25 +1,36 @@
-import logo from './logo.svg';
+import { useState } from 'react';
 import './App.css';
+import Universe from './Universe';
 
 function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+    const [universes, setUniverses] = useState([]);
+    const [editing, setEditing] = useState(false);
+
+    const createNewUniverse = () => {
+        setEditing(true);
+        setUniverses([...universes, { cells: Array(20).fill().map(() => Array(20).fill(false)) }]);
+    };
+
+    const saveUniverse = () => {
+        setEditing(false);
+    };
+
+    return (
+        <div className="App">
+            {universes.map((universe, index) => (
+                <div key={index} className="universe">
+                    <Universe universe={universe} />
+                </div>
+            ))}
+            <div className="buttons">
+                {editing ? (
+                    <button onClick={saveUniverse}>Save Universe</button>
+                ) : (
+                    <button onClick={createNewUniverse}>New Universe</button>
+                )}
+            </div>
+        </div>
+    );
 }
 
 export default App;
