@@ -1,0 +1,37 @@
+body {
+    background-color: black;
+    color: white;
+}
+
+#new, #save {
+    display: none;
+}
+
+#main {
+    text-align: center;
+}
+
+table.multiverse {
+    border-collapse: collapse;
+    border-spacing: 0;
+    padding: 0;
+}
+
+table.multiverse td, table.multiverse tr {
+    padding: 0;
+    line-height: 0;
+}
+
+table.multiverse, table.universe {
+    table-layout: fixed;
+    display: inline;
+}
+
+.cell {
+    background: #2c2c2c;
+    width: 8px;
+    min-width: 8px;
+    height: 8px;
+    min-height: 8px;
+    /*border: 1px solid white;*/
+}
