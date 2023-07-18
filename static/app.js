@@ -1,16 +1,26 @@
 const UNIVERSE_SIZE = 20;
 const DEAD_CELL_COLOUR = "#2c2c2c";
+const EDITABLE_CELL_COLOUR = "#434343";
 
 
 class Multiverse {
     constructor(universes) {
         this.universes = universes || []
+        this.isEditable = true
     }
 
-    createEmptyUniverse(isEditable) {
+    createNewUniverse(isEditable) {
         let universe = new Universe(true, getRandomColor());
         universe.isEditable = isEditable;
         this.universes.push(universe)
+    }
+
+    saveNewUniverse() {
+        this.universes[this.universes.length - 1].isEditable = false
+    }
+
+    dropNewUniverse() {
+        this.universes.pop();
     }
 
     render() {
@@ -18,7 +28,7 @@ class Multiverse {
         let row
         for (let i = 0; i < this.universes.length; i++) {
 
-            if (i % 5 === 0) {
+            if (i % 4 === 0) {
                 row = $('<tr>');
             }
             let td = $('<td>');
@@ -34,23 +44,17 @@ class Multiverse {
 let mu = new Multiverse([])
 
 
-class Cell {
-    constructor(alive, universe) {
-        this.alive = alive;
-        this.universe = universe;
-    }
-}
-
 class Universe {
     constructor(isEditable, colour, cells) {
         this.isEditable = isEditable;
         this.colour = colour;
-        this.cells = cells || Array(UNIVERSE_SIZE).fill(Array(UNIVERSE_SIZE).fill(new Cell(false, this)));
+        this.cells = cells || new Array(UNIVERSE_SIZE).fill(false).map(
+            () => new Array(UNIVERSE_SIZE).fill(false)
+        );
     }
 
     render() {
         let universe = this
-
         let table = $('<table class="universe">');
         for (let x = 0; x < this.cells.length; x++) {
             let row = $('<tr>');
@@ -58,24 +62,22 @@ class Universe {
                 let td = $('<td class="cell">');
                 td.attr("x", x);
                 td.attr("y", y);
-
-                // Cell click.
-                td.on("click", () => {
-                    console.log(this.cells);
-                    this.cellOnClickHandler(td, universe)
-                    console.log(this.cells);
-                    // this.cells[i][j] = !this.cells[i][j]
-                });
-                // Hover highlight.
-                // td.hover(
-                //     () => this.cellOnHoverInHandler(td, universe),
-                //     () => this.cellOnHoverOutHandler(td, universe),
-                // )
-                // // Highlight live cell.
-                // if (this.cells[i][j]) {
-                //     td.toggleClass("live")
-                //     td.css("background", this.colour)
-                // }
+                // Highlight cell if it's alive.
+                if (this.cells[x][y]) {
+                    td.css("background", this.colour)
+                }
+                if (this.isEditable) {
+                    td.addClass("editable")
+                    // Cell onclick handler.
+                    td.on("click", () => {
+                        this.cellOnClickHandler(td, universe)
+                    });
+                    // Hover highlight.
+                    td.hover(
+                        () => this.cellOnHoverInHandler(td, universe),
+                        () => this.cellOnHoverOutHandler(td, universe),
+                    )
+                }
                 row.append(td);
             }
             table.append(row);
@@ -84,25 +86,37 @@ class Universe {
     }
 
     cellOnClickHandler(td, universe) {
-        td.toggleClass("live")
-        if (td.hasClass("live")) {
+        let x = td.attr("x")
+        let y = td.attr("y")
+        universe.cells[x][y] = !universe.cells[x][y];
+        if (universe.cells[x][y]) {
             td.css("background", universe.colour)
         }
     }
 
-    cellOnHoverInHandler(cell, universe) {
-        if (cell.hasClass("live")) {
+    cellOnHoverInHandler(td, universe) {
+        if (universe.cells[td.attr("x")][td.attr("y")]) {
             return
         }
-        cell.css("background", universe.colour)
+        td.css("background", universe.colour)
     }
 
-    cellOnHoverOutHandler(cell, universe) {
-        if (cell.hasClass("live")) {
+    cellOnHoverOutHandler(td, universe) {
+        if (universe.cells[td.attr("x")][td.attr("y")]) {
             return
         }
-        cell.css("background", DEAD_CELL_COLOUR)
+        td.css("background", EDITABLE_CELL_COLOUR)
     }
+}
+
+let lastColor = null;
+
+function colorDistance(color1, color2) {
+    return Math.sqrt(
+        Math.pow(parseInt(color1.substr(1, 2), 16) - parseInt(color2.substr(1, 2), 16), 2) +
+        Math.pow(parseInt(color1.substr(3, 2), 16) - parseInt(color2.substr(3, 2), 16), 2) +
+        Math.pow(parseInt(color1.substr(5, 2), 16) - parseInt(color2.substr(5, 2), 16), 2)
+    );
 }
 
 function getRandomColor() {
@@ -114,29 +128,30 @@ function getRandomColor() {
             color += letters[Math.floor(Math.random() * 16)];
         }
 
-        // Check if the generated color is not too dark or too light
         let luminance = getLuminance(color);
         if (luminance > 0.1 && luminance < 0.9) {
-            break;
+            // Check that the color is different enough from the last color
+            if (lastColor === null || colorDistance(color, lastColor) > 100) {
+                break;
+            }
         }
         color = '#'; // Reset the color if it doesn't meet the criteria
     }
 
+    lastColor = color;
     return color;
 }
 
 function getLuminance(color) {
-    // Extract RGB values from the color string
     let r = parseInt(color.substr(1, 2), 16);
     let g = parseInt(color.substr(3, 2), 16);
     let b = parseInt(color.substr(5, 2), 16);
 
-    // Calculate relative luminance using the formula for sRGB color space
     return (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
 }
 
 function newUniverse() {
-    mu.createEmptyUniverse(true)
+    mu.createNewUniverse(true)
     $('#multiverseWrapper').html(mu.render());
 }
 
@@ -144,10 +159,33 @@ function initApp() {
     $('#multiverseWrapper').append(mu.render());
 
     // Display buttons.
-
     let newButton = $("#new")
+    let saveButton = $("#save")
+    let dropButton = $("#drop")
+    // New universe btn handler.
     newButton.show();
-    newButton.on("click", newUniverse);
+    newButton.on("click", () => {
+        newUniverse();
+        newButton.hide();
+        saveButton.show();
+        dropButton.show();
+    });
+    // Save universe btn handler.
+    saveButton.on("click", () => {
+        mu.saveNewUniverse();
+        $('#multiverseWrapper').html(mu.render());
+        newButton.show();
+        saveButton.hide();
+        dropButton.hide();
+    });
+    // Drop universe btn handler.
+    dropButton.on("click", () => {
+        mu.dropNewUniverse();
+        $('#multiverseWrapper').html(mu.render());
+        newButton.show();
+        saveButton.hide();
+        dropButton.hide();
+    });
 
 }
 

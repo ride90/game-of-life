@@ -3,7 +3,7 @@ body {
     color: white;
 }
 
-#new, #save {
+#new, #save, #drop {
     display: none;
 }
 
@@ -29,9 +29,12 @@ table.multiverse, table.universe {
 
 .cell {
     background: #2c2c2c;
-    width: 8px;
-    min-width: 8px;
-    height: 8px;
-    min-height: 8px;
-    /*border: 1px solid white;*/
+    width: 12px;
+    min-width: 12px;
+    height: 12px;
+    min-height: 12px;
+}
+
+.editable {
+    background: #434343;
 }
