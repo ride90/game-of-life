@@ -1,12 +1,51 @@
 const UNIVERSE_SIZE = 20;
 const DEAD_CELL_COLOUR = "#2c2c2c";
 const EDITABLE_CELL_COLOUR = "#434343";
+const API_URL_BASE = "http://127.0.0.1:4000/api"
+const API_REQUEST_TIMEOUT = 1000
+
+
+class APIClient {
+    constructor() {
+        this.axios = axios.create({
+            baseURL: API_URL_BASE,
+            timeout: API_REQUEST_TIMEOUT
+        });
+
+    }
+
+    health() {
+        this.axios.get(API_URL_BASE + "/health")
+            .then(function (response) {
+                console.log("Health", response.statusText);
+            })
+            .catch(function (error) {
+                console.log(error);
+            })
+    }
+
+    createUniverse(colour, cells) {
+        this.axios.post(API_URL_BASE + "/universe", {
+            colour: colour,
+            cells: cells
+        })
+            .then(function (response) {
+                console.log(response);
+            })
+            .catch(function (error) {
+                console.log(error);
+            });
+    }
+}
 
 
 class Multiverse {
     constructor(universes) {
         this.universes = universes || []
         this.isEditable = true
+        // Get API client and health ping server.
+        this.apiClient = new APIClient()
+        this.apiClient.health()
     }
 
     createNewUniverse(isEditable) {
@@ -16,7 +55,12 @@ class Multiverse {
     }
 
     saveNewUniverse() {
-        this.universes[this.universes.length - 1].isEditable = false
+        let universe = this.universes[this.universes.length - 1]
+        // Save universe locally.
+        universe.isEditable = false
+        // Create universe on the server.
+        this.apiClient.createUniverse(universe.colour, universe.cells)
+
     }
 
     dropNewUniverse() {
@@ -38,7 +82,6 @@ class Multiverse {
         }
         return table;
     }
-
 }
 
 let mu = new Multiverse([])
