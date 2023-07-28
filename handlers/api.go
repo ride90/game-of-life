@@ -15,10 +15,9 @@ func NewHandlerAPI() handlerAPI {
 }
 
 func (h handlerAPI) Health(w http.ResponseWriter, r *http.Request) {
-
+	// TODO: Remove/comment matrix render from here.
 	mv := multiverse.GetInstance()
 	fmt.Println(mv.RenderMatrices())
-
 	json.NewEncoder(w).Encode(map[string]bool{"ok": true})
 }
 
@@ -35,6 +34,8 @@ func (h handlerAPI) CreateUniverse(w http.ResponseWriter, r *http.Request) {
 	// Add universe into multiverse.
 	mv := multiverse.GetInstance()
 	mv.AddUniverse(&u)
+
+	fmt.Println("Created")
 
 	w.WriteHeader(http.StatusCreated)
 }

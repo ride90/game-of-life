@@ -2,7 +2,7 @@ const UNIVERSE_SIZE = 20;
 const DEAD_CELL_COLOUR = "#2c2c2c";
 const EDITABLE_CELL_COLOUR = "#434343";
 const API_URL_BASE = "http://127.0.0.1:4000/api"
-const API_REQUEST_TIMEOUT = 1000
+const API_REQUEST_TIMEOUT = 5000
 
 
 class APIClient {

@@ -10,6 +10,10 @@ import (
 type Multiverse struct {
 	universes [16]*universe.Universe
 	count     int
+	// This lock will be used during evolve + add new universe.
+	// In theory during evolve this lock is not needed.
+	// TODO: Implement lock.
+	writeLock sync.Mutex
 }
 
 func newMultiverse() *Multiverse {
@@ -18,6 +22,8 @@ func newMultiverse() *Multiverse {
 }
 
 func (r *Multiverse) AddUniverse(u *universe.Universe) {
+	r.writeLock.Lock()
+	defer r.writeLock.Unlock()
 	r.universes[r.count] = u
 	r.count++
 }
@@ -46,13 +52,13 @@ func (r *Multiverse) RenderMatrices() string {
 // This variable will be accessible from multiple places/goroutines.
 // Lock is used to avoid a race-conditions.
 // Singleton anti-pattern is used.
-var mvLock = &sync.Mutex{}
+var mvCreateInstanceLock = &sync.Mutex{}
 var mvInstance *Multiverse
 
 func GetInstance() *Multiverse {
 	if mvInstance == nil {
-		mvLock.Lock()
-		defer mvLock.Unlock()
+		mvCreateInstanceLock.Lock()
+		defer mvCreateInstanceLock.Unlock()
 		mvInstance = newMultiverse()
 		if mvInstance == nil {
 			mvInstance = newMultiverse()
