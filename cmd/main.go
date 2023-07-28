@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/ride90/game-of-life/handlers"
+	"github.com/ride90/game-of-life/internal/multiverse"
 	"github.com/ride90/game-of-life/middlewares"
 	"log"
 
@@ -12,6 +13,9 @@ import (
 )
 
 func main() {
+	// Start evolving multiverse in the background.
+	go multiverse.EvolveMultiverseTask()
+
 	router := mux.NewRouter()
 	// Global middlewares.
 	router.Use(middlewares.MiddlewareLogging)
@@ -28,7 +32,7 @@ func main() {
 	// TODO: Move this crap somewhere.
 	const host, port = "127.0.0.1", 4000
 	addr := fmt.Sprintf("%s:%d", host, port)
-
+	// Create & run server.
 	srv := &http.Server{
 		Handler: router,
 		Addr:    addr,
