@@ -8,26 +8,30 @@ import (
 )
 
 type Multiverse struct {
-	universes []*universe.Universe
+	universes [16]*universe.Universe
+	count     int
 }
 
 func newMultiverse() *Multiverse {
 	mu := Multiverse{}
-	mu.universes = make([]*universe.Universe, 0, 16)
 	return &mu
 }
 
 func (r *Multiverse) AddUniverse(u *universe.Universe) {
-	r.universes = append(r.universes, u)
+	r.universes[r.count] = u
+	r.count++
 }
 
 func (r *Multiverse) String() string {
-	return fmt.Sprintf("Multiverse with %d universes", len(r.universes))
+	return fmt.Sprintf("Multiverse with %d/%d universes", r.count, len(r.universes))
 }
 
 func (r *Multiverse) RenderMatrices() string {
 	var matricesStringBuilder strings.Builder
 	for i, u := range r.universes {
+		if u == nil {
+			continue
+		}
 		matricesStringBuilder.WriteString(
 			fmt.Sprintf("Matrix #%d:\n", i),
 		)
