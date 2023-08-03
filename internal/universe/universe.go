@@ -48,3 +48,7 @@ func (r *Universe) RenderMatrix() string {
 	}
 	return matrixStringBuilder.String()
 }
+
+func (r *Universe) Evolve() {
+	fmt.Println("Evolving universe", r)
+}

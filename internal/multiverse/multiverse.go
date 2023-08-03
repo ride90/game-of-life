@@ -10,10 +10,13 @@ import (
 type Multiverse struct {
 	universes [16]*universe.Universe
 	count     int
-	// This lock will be used during evolve + add new universe.
-	// In theory during evolve this lock is not needed.
-	// TODO: Implement lock.
-	writeLock sync.Mutex
+	// This lock will be used during evolve + AddUniverse.
+	// In theory, during evolve this lock is not needed, since every universe
+	// has its own memory address and concurrent evolving of universes is totally
+	// race-condition free. Even AddUniverse should be safe since it's only
+	// "appending" a universe to an array and there is not much of intersection
+	// with evolve, but it's better to cover AddUniverse with a lock.
+	lock sync.Mutex
 }
 
 func newMultiverse() *Multiverse {
@@ -22,8 +25,8 @@ func newMultiverse() *Multiverse {
 }
 
 func (r *Multiverse) AddUniverse(u *universe.Universe) {
-	r.writeLock.Lock()
-	defer r.writeLock.Unlock()
+	r.lock.Lock()
+	defer r.lock.Unlock()
 	r.universes[r.count] = u
 	r.count++
 }
@@ -46,6 +49,36 @@ func (r *Multiverse) RenderMatrices() string {
 		)
 	}
 	return matricesStringBuilder.String()
+}
+
+func (r *Multiverse) evolve() {
+	fmt.Println("Evolving multiverse")
+	fmt.Println("Acquiring lock")
+	// Lock & Unlock.
+	r.lock.Lock()
+	defer func() {
+		fmt.Println("Releasing lock")
+		fmt.Print("\n\n")
+		r.lock.Unlock()
+	}()
+
+	// Each universe evolves itself in goroutine.
+	var wg sync.WaitGroup
+	for _, u := range r.universes {
+		if u == nil {
+			continue
+		}
+		// TODO: Think/research if closure approach is better here:
+		//   https://go.dev/doc/faq#closures_and_goroutines
+		wg.Add(1)
+		go func(u *universe.Universe, wg *sync.WaitGroup) {
+			defer wg.Done()
+			u.Evolve()
+		}(u, &wg)
+	}
+	fmt.Println("Waiting for goroutines to finish...")
+	wg.Wait()
+	fmt.Println("FINISHED!")
 }
 
 // Create an empty multiverse.
