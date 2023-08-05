@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/ride90/game-of-life/internal/multiverse"
 	"github.com/ride90/game-of-life/internal/universe"
 	"net/http"
@@ -15,10 +14,11 @@ func NewHandlerAPI() handlerAPI {
 }
 
 func (h handlerAPI) Health(w http.ResponseWriter, r *http.Request) {
-	// TODO: Remove/comment matrix render from here.
-	mv := multiverse.GetInstance()
-	fmt.Println(mv.RenderMatrices())
-	json.NewEncoder(w).Encode(map[string]bool{"ok": true})
+	// TODO: Implement a proper health check.
+	err := json.NewEncoder(w).Encode(map[string]bool{"ok": true})
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+	}
 }
 
 func (h handlerAPI) CreateUniverse(w http.ResponseWriter, r *http.Request) {
@@ -34,8 +34,6 @@ func (h handlerAPI) CreateUniverse(w http.ResponseWriter, r *http.Request) {
 	// Add universe into multiverse.
 	mv := multiverse.GetInstance()
 	mv.AddUniverse(&u)
-
-	fmt.Println("Created")
-
+	// Write response status.
 	w.WriteHeader(http.StatusCreated)
 }

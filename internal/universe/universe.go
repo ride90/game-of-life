@@ -6,8 +6,10 @@ import (
 )
 
 const (
-	dead  = "x"
-	alive = "■"
+	deadRender  = "x"
+	aliveRender = "■"
+	deadValue   = false
+	aliveValue  = true
 )
 
 type Universe struct {
@@ -27,7 +29,7 @@ func (r *Universe) String() string {
 func (r *Universe) UpdateStats() {
 	for _, row := range r.Matrix {
 		for _, cell := range row {
-			if cell {
+			if cell == aliveValue {
 				r.aliveCellsCount++
 			}
 		}
@@ -38,10 +40,10 @@ func (r *Universe) RenderMatrix() string {
 	var matrixStringBuilder strings.Builder
 	for _, row := range r.Matrix {
 		for _, cell := range row {
-			if cell {
-				matrixStringBuilder.WriteString(alive)
+			if cell == aliveValue {
+				matrixStringBuilder.WriteString(aliveRender)
 			} else {
-				matrixStringBuilder.WriteString(dead)
+				matrixStringBuilder.WriteString(deadRender)
 			}
 		}
 		matrixStringBuilder.WriteString("\n")
@@ -57,14 +59,14 @@ func (r *Universe) Evolve() {
 	for y := range r.Matrix {
 		for x := range r.Matrix[y] {
 			neighborsCount := r.neighboursCount(x, y)
-			if r.Matrix[y][x] {
+			if r.Matrix[y][x] == aliveValue {
 				if neighborsCount < 2 || neighborsCount > 3 {
-					nextGenMatrix[y][x] = false
+					nextGenMatrix[y][x] = deadValue
 				}
 			} else if neighborsCount == 3 {
-				nextGenMatrix[y][x] = true
+				nextGenMatrix[y][x] = aliveValue
 			}
-			if nextGenMatrix[y][x] {
+			if nextGenMatrix[y][x] == aliveValue {
 				r.aliveCellsCount++
 			}
 		}
@@ -96,28 +98,28 @@ func (r *Universe) neighboursCount(x, y int) int {
 	} else {
 		sy = 0
 	}
-	if r.Matrix[ny][wx] {
+	if r.Matrix[ny][wx] == aliveValue {
 		neighbours++
 	}
-	if r.Matrix[ny][x] {
+	if r.Matrix[ny][x] == aliveValue {
 		neighbours++
 	}
-	if r.Matrix[ny][ex] {
+	if r.Matrix[ny][ex] == aliveValue {
 		neighbours++
 	}
-	if r.Matrix[y][wx] {
+	if r.Matrix[y][wx] == aliveValue {
 		neighbours++
 	}
-	if r.Matrix[y][ex] {
+	if r.Matrix[y][ex] == aliveValue {
 		neighbours++
 	}
-	if r.Matrix[sy][wx] {
+	if r.Matrix[sy][wx] == aliveValue {
 		neighbours++
 	}
-	if r.Matrix[sy][ex] {
+	if r.Matrix[sy][ex] == aliveValue {
 		neighbours++
 	}
-	if r.Matrix[sy][x] {
+	if r.Matrix[sy][x] == aliveValue {
 		neighbours++
 	}
 	return neighbours
