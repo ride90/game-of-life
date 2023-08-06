@@ -6,20 +6,20 @@ import (
 	"path/filepath"
 )
 
-// handlerSPA implements the http.Handler interface, so we can use it
+// HandlerSPA implements the http.Handler interface, so we can use it
 // to respond to HTTP requests. The path to the web directory and
 // path to the index file within that web directory are used to
 // serve the SPA in the given web directory.
-type handlerSPA struct {
+type HandlerSPA struct {
 	staticPath string
 	indexPath  string
 }
 
-func NewHandlerSPA(staticPath, indexPath string) handlerSPA {
-	return handlerSPA{staticPath: staticPath, indexPath: indexPath}
+func NewHandlerSPA(staticPath, indexPath string) HandlerSPA {
+	return HandlerSPA{staticPath: staticPath, indexPath: indexPath}
 }
 
-func (receiver handlerSPA) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (receiver HandlerSPA) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// Get the absolute path to prevent directory traversal.
 	path, err := filepath.Abs(r.URL.Path)
 	if err != nil {

@@ -7,13 +7,13 @@ import (
 	"net/http"
 )
 
-type handlerAPI struct{}
+type HandlerAPI struct{}
 
-func NewHandlerAPI() handlerAPI {
-	return handlerAPI{}
+func NewHandlerAPI() HandlerAPI {
+	return HandlerAPI{}
 }
 
-func (h handlerAPI) Health(w http.ResponseWriter, r *http.Request) {
+func (h HandlerAPI) Health(w http.ResponseWriter, r *http.Request) {
 	// TODO: Implement a proper health check.
 	err := json.NewEncoder(w).Encode(map[string]bool{"ok": true})
 	if err != nil {
@@ -21,7 +21,7 @@ func (h handlerAPI) Health(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h handlerAPI) CreateUniverse(w http.ResponseWriter, r *http.Request) {
+func (h HandlerAPI) CreateUniverse(w http.ResponseWriter, r *http.Request) {
 	var u universe.Universe
 	// Decode from stream into Universe struct instance.
 	err := json.NewDecoder(r.Body).Decode(&u)
