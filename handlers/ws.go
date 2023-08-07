@@ -1,8 +1,8 @@
 package handlers
 
 import (
-	"fmt"
 	"github.com/gorilla/websocket"
+	"github.com/ride90/game-of-life/internal/ws"
 	"log"
 	"net/http"
 )
@@ -14,17 +14,24 @@ type HandlerWS struct {
 func NewHandlerWS() HandlerWS {
 	return HandlerWS{
 		upgrader: websocket.Upgrader{
+			// TODO: Set a reasonable buffer.
 			WriteBufferSize: 1024,
 			CheckOrigin:     func(r *http.Request) bool { return true },
 		},
 	}
 }
 
-func (h HandlerWS) StreamUpdates(w http.ResponseWriter, r *http.Request) {
+func (h HandlerWS) NewConnection(w http.ResponseWriter, r *http.Request, wsHub *ws.Hub) {
 	// Upgrade this connection to a WebSocket connection.
-	ws, err := h.upgrader.Upgrade(w, r, nil)
+	conn, err := h.upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Println(err)
 	}
-	fmt.Println(ws)
+
+	// Add connection to the web socket hub.
+	wsConn := &ws.Connection{Conn: conn, Hub: wsHub}
+	wsHub.AddConnection(wsConn)
+
+	// Start reading messages.
+	wsConn.ReadMessages()
 }

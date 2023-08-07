@@ -51,7 +51,8 @@ func (r *Multiverse) RenderMatrices() string {
 	return matricesStringBuilder.String()
 }
 
-func (r *Multiverse) evolve() {
+func (r *Multiverse) Evolve() {
+	// TODO: Remove comments.
 	fmt.Println("Evolving multiverse")
 	fmt.Println("Acquiring lock")
 	// Lock & Unlock.
@@ -84,7 +85,7 @@ func (r *Multiverse) evolve() {
 // Create an empty multiverse.
 // This variable will be accessible from multiple places/goroutines.
 // Lock is used to avoid a race-conditions.
-// Singleton anti-pattern is used.
+// Singleton anti-pattern is used rather for learning purpose (works fine btw).
 var mvCreateInstanceLock = &sync.Mutex{}
 var mvInstance *Multiverse
 

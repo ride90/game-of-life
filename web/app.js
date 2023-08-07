@@ -3,15 +3,27 @@ const DEAD_CELL_COLOUR = "#2c2c2c";
 const EDITABLE_CELL_COLOUR = "#434343";
 const API_URL_BASE = "http://127.0.0.1:4000/api"
 const API_REQUEST_TIMEOUT = 5000
+const WS_UPDATES_URL = "ws://127.0.0.1:4000/ws/updates"
 
 
 class APIClient {
     constructor() {
+        // Setup http client.
         this.axios = axios.create({
             baseURL: API_URL_BASE,
             timeout: API_REQUEST_TIMEOUT
         });
-
+        // Setup ws client.
+        this.ws = new WebSocket(WS_UPDATES_URL);
+        this.ws.onopen = () => {
+            console.log("WS successfully connected.");
+        };
+        this.ws.onclose = event => {
+            console.log("WS closed connection:", event);
+        };
+        this.ws.onerror = error => {
+            console.log("WS error: ", error);
+        };
     }
 
     health() {

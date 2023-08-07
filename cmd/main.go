@@ -4,17 +4,22 @@ import (
 	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/ride90/game-of-life/handlers"
-	"github.com/ride90/game-of-life/internal/multiverse"
+	"github.com/ride90/game-of-life/internal/ws"
 	"github.com/ride90/game-of-life/middlewares"
+	"github.com/ride90/game-of-life/tasks"
 	"log"
 
 	"net/http"
 	"time"
 )
 
+// TODO: Create configs https://dev.to/ilyakaznacheev/a-clean-way-to-pass-configs-in-a-go-application-1g64
+
 func main() {
-	// Start evolving multiverse in the background.
-	go multiverse.EvolveMultiverseTask()
+	wsHub := ws.NewHub()
+
+	// Evolve universes & stream updates via ws to clients.
+	go tasks.StreamUpdates(wsHub)
 
 	router := mux.NewRouter()
 	// Global middlewares.
@@ -30,9 +35,13 @@ func main() {
 	routerAPI.HandleFunc("/universe", apiHandler.CreateUniverse).Methods(http.MethodPost)
 
 	// WS handler.
-	routerWS := router.PathPrefix("/ws").Subrouter()
 	wsHandler := handlers.NewHandlerWS()
-	routerWS.HandleFunc("/updates", wsHandler.StreamUpdates)
+	router.HandleFunc(
+		"/ws/updates",
+		func(w http.ResponseWriter, r *http.Request) {
+			wsHandler.NewConnection(w, r, wsHub)
+		},
+	)
 
 	// Static files handler.
 	spaHandler := handlers.NewHandlerSPA("web", "index.html")
