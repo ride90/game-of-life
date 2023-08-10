@@ -1,8 +1,10 @@
 package multiverse
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/ride90/game-of-life/internal/universe"
+	"log"
 	"strings"
 	"sync"
 )
@@ -52,14 +54,13 @@ func (r *Multiverse) RenderMatrices() string {
 }
 
 func (r *Multiverse) Evolve() {
-	// TODO: Remove comments.
-	fmt.Println("Evolving multiverse")
-	fmt.Println("Acquiring lock")
+	// TODO: Remove comments and do proper logging.
+	log.Println("Evolve:", r)
+	log.Println("Evolve: acquiring lock")
 	// Lock & Unlock.
 	r.lock.Lock()
 	defer func() {
-		fmt.Println("Releasing lock")
-		fmt.Print("\n\n")
+		log.Println("Evolve: releasing lock")
 		r.lock.Unlock()
 	}()
 
@@ -77,9 +78,12 @@ func (r *Multiverse) Evolve() {
 			u.Evolve()
 		}(u, &wg)
 	}
-	fmt.Println("Waiting for goroutines to finish...")
+	log.Println("Evolve: waiting for goroutines to finish.")
 	wg.Wait()
-	fmt.Println("FINISHED!")
+}
+
+func (r *Multiverse) ToJSON() ([]byte, error) {
+	return json.Marshal(r.universes[:r.count])
 }
 
 // Create an empty multiverse.

@@ -79,6 +79,19 @@ class Multiverse {
         this.universes.pop();
     }
 
+    consumeUpdates() {
+        this.apiClient.ws.onmessage = event => {
+            // console.log("WS got message:", event.data);
+            const editableUniverses = this.universes.filter((universe) => universe.isEditable);
+            this.universes = []
+            for (const data of JSON.parse(event.data)) {
+                this.universes.push(new Universe(false, data.colour, data.cells))
+            }
+            this.universes = this.universes.concat(editableUniverses)
+            $('#multiverseWrapper').html(this.render());
+        }
+    }
+
     render() {
         let table = $('<table class="multiverse">');
         let row
@@ -241,6 +254,9 @@ function initApp() {
         saveButton.hide();
         dropButton.hide();
     });
+
+    // Subscribe for updates via WS.
+    mu.consumeUpdates();
 
 }
 

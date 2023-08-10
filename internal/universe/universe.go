@@ -13,10 +13,13 @@ const (
 )
 
 type Universe struct {
+	// TODO: Think of a better way of decomposition json specific fields/access
+	//  into a separate struct:
+	//  - https://attilaolah.eu/2014/09/10/json-and-struct-composition-in-go/
 	Matrix           [20][20]bool `json:"cells"`
 	Colour           string       `json:"colour"`
-	generationNumber int
-	aliveCellsCount  int
+	generationNumber int          `json:"-"`
+	aliveCellsCount  int          `json:"-"`
 }
 
 func (r *Universe) String() string {
@@ -52,7 +55,6 @@ func (r *Universe) RenderMatrix() string {
 }
 
 func (r *Universe) Evolve() {
-	fmt.Println("Evolving universe", r)
 	nextGenMatrix := r.Matrix
 
 	r.aliveCellsCount = 0

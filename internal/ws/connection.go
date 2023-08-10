@@ -38,3 +38,10 @@ func (r *Connection) ReadMessages() {
 	// Connection closed.
 	r.Hub.RemoveConnection(r)
 }
+
+func (r *Connection) SendMessage(data []byte) {
+	err := r.Conn.WriteMessage(websocket.TextMessage, data)
+	if err != nil {
+		log.Printf("Error while sending a message. %s. Error: %s", r, err)
+	}
+}
