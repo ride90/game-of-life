@@ -95,7 +95,7 @@ class Multiverse {
         this.universes.pop();
     }
 
-    consumeUpdates(renderUpdates = false) {
+    consumeUpdates(onUpdate) {
         this.apiClient.ws.onmessage = event => {
             // Get updates from the server.
             const editableUniverses = this.universes.filter((universe) => universe.isEditable);
@@ -105,38 +105,47 @@ class Multiverse {
             }
             this.universes = this.universes.concat(editableUniverses)
             // Very "Efficient" re-rendering of all non-editable universes.
-            if (renderUpdates) {
-                this.renderDynamic()
+            if (onUpdate) {
+                onUpdate()
             }
         }
     }
 
     render() {
-        let table = $('<table class="multiverse">');
+        let wrapper = $('<div>');
+        wrapper.append(this.renderExisting())
+        wrapper.append(this.renderEditable())
+        return wrapper
+    }
+
+    _render(universes, containerClass) {
+        let table = $('<table>');
+        table.addClass(containerClass)
         let row
-        for (let i = 0; i < this.universes.length; i++) {
+        for (let i = 0; i < universes.length; i++) {
             if (i % 4 === 0) {
                 row = $('<tr>');
             }
             let td = $('<td>');
-            td.append(this.universes[i].render())
+            td.append(universes[i].render())
             row.append(td);
             table.append(row);
         }
-        // $('#multiverseWrapper').html(table);
         return table;
     }
 
-    renderDynamic() {
-        // const NonEditableUniverses = this.universes.filter((universe) => !universe.isEditable);
-        // for (const u of this.universes) {
-        //     console.log(u)
-        // }
-        // // Add editable universe(s).
-        //
-        // $("table.multiverse table.universe").each(function(index, element){
-        //     console.log(index, element);
-        // });
+    renderExisting() {
+        return this._render(
+            this.universes.filter((universe) => !universe.isEditable),
+            "multiverse"
+        );
+    }
+    
+    renderEditable() {
+        return this._render(
+            this.universes.filter((universe) => universe.isEditable),
+            "wizard"
+        );
     }
 }
 
@@ -152,9 +161,9 @@ class Universe {
         );
     }
 
-    renderStatic() {
+    _renderEditable() {
         let universe = this
-        let table = $('<table class="universe static">');
+        let table = $('<table class="universe">');
 
         for (let x = 0; x < this.cells.length; x++) {
             let row = $('<tr>');
@@ -183,50 +192,38 @@ class Universe {
         return table;
     }
 
-    renderDynamic() {
+    _renderExisting() {
         let universe = this
-        let $canvas = $('<canvas width="450" height="450">');
+        let $canvas = $('<canvas width="260" height="260">');
         let canvas = $canvas[0]
         let ctx = canvas.getContext("2d")
 
 
         // Set the size of each cell and the padding between cells
-        const cellSize = 20;
-        const padding = 2;
+        const cellSize = 12;
+        const padding = 1;
 
         // Loop through the matrix and render each cell
         for (let row = 0; row < universe.cells.length; row++) {
             for (let col = 0; col < universe.cells[row].length; col++) {
                 const cellValue = universe.cells[row][col];
-
                 // Calculate the position for the current cell
                 const x = col * (cellSize + padding);
                 const y = row * (cellSize + padding);
-
                 // Set the fill color based on the cell value
                 ctx.fillStyle = cellValue === true ? universe.colour : DEAD_CELL_COLOUR;
-
                 // Draw the cell
                 ctx.fillRect(x, y, cellSize, cellSize);
             }
         }
-
-
-        // for (let x = 0; x < 20; ++x) {
-        //     for (let y = 0; y < 20; ++y) {
-        //         if (Math.random() < 0.5) {
-        //             ctx.fillRect(x, y, 20, 20);
-        //         }
-        //     }
-        // }
         return canvas
     }
 
     render() {
         if (this.isEditable) {
-            return this.renderStatic()
+            return this._renderEditable()
         }
-        return this.renderDynamic()
+        return this._renderExisting()
     }
 
     cellOnClickHandler(td, universe) {
@@ -296,11 +293,13 @@ function getLuminance(color) {
 
 function newUniverse() {
     mu.createNewUniverse(true)
-    $('#multiverseWrapper').html(mu.render());
+    $('#wizardWrapper').html(mu.renderEditable());
 }
 
 function initApp() {
-    $('#multiverseWrapper').append(mu.render());
+    const $multiverseWrapper = $('#multiverseWrapper')
+    const $wizardWrapper = $('#wizardWrapper')
+    $multiverseWrapper.append(mu.renderExisting());
 
     // Display buttons.
     let newButton = $("#new")
@@ -317,7 +316,7 @@ function initApp() {
     // Save universe btn handler.
     saveButton.on("click", () => {
         mu.saveNewUniverse();
-        $('#multiverseWrapper').html(mu.render());
+        $wizardWrapper.html(mu.renderEditable());
         newButton.show();
         saveButton.hide();
         dropButton.hide();
@@ -325,14 +324,16 @@ function initApp() {
     // Drop universe btn handler.
     dropButton.on("click", () => {
         mu.dropNewUniverse();
-        $('#multiverseWrapper').html(mu.render());
+        $wizardWrapper.html(mu.renderEditable());
         newButton.show();
         saveButton.hide();
         dropButton.hide();
     });
 
-    // Subscribe for updates via WS and render them.
-    mu.consumeUpdates(true);
+    // Get updates and rerender them.
+    mu.consumeUpdates(
+        () => $multiverseWrapper.html(mu.renderExisting())
+    );
 }
 
 $(document).ready(function () {

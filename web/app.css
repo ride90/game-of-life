@@ -18,6 +18,11 @@ table.multiverse {
 }
 
 table.multiverse td, table.multiverse tr {
+    padding: 1px;
+    line-height: 0;
+}
+
+table.multiverse tr {
     padding: 0;
     line-height: 0;
 }
@@ -37,4 +42,12 @@ table.multiverse, table.universe {
 
 .editable {
     background: #434343;
+}
+
+.wizardWrapper {
+    text-align: center;
+}
+
+.wizard {
+    display: inline;
 }
