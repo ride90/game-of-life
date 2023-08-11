@@ -9,11 +9,20 @@ const WS_UPDATES_URL = "ws://127.0.0.1:4000/ws/updates"
 class APIClient {
     constructor() {
         // Setup http client.
+        this.initHTTP()
+        // Setup WS client.
+        this.initWS()
+    }
+
+    initHTTP() {
         this.axios = axios.create({
             baseURL: API_URL_BASE,
             timeout: API_REQUEST_TIMEOUT
         });
-        // Setup ws client.
+    }
+
+    initWS() {
+        const self = this;
         this.ws = new WebSocket(WS_UPDATES_URL);
         this.ws.onopen = () => {
             console.log("WS successfully connected.");
@@ -23,6 +32,12 @@ class APIClient {
         };
         this.ws.onerror = error => {
             console.log("WS error: ", error);
+        };
+        this.ws.onclose = function (e) {
+            console.log("Socket is closed. Reconnect will be attempted in 1 second.", e.reason);
+            setTimeout(function () {
+                self.initWS();
+            }, 1000);
         };
     }
 
@@ -67,6 +82,7 @@ class Multiverse {
     }
 
     saveNewUniverse() {
+        // TODO: Save only not empty one.
         let universe = this.universes[this.universes.length - 1]
         // Save universe locally.
         universe.isEditable = false
@@ -79,16 +95,19 @@ class Multiverse {
         this.universes.pop();
     }
 
-    consumeUpdates() {
+    consumeUpdates(renderUpdates = false) {
         this.apiClient.ws.onmessage = event => {
-            // console.log("WS got message:", event.data);
+            // Get updates from the server.
             const editableUniverses = this.universes.filter((universe) => universe.isEditable);
             this.universes = []
             for (const data of JSON.parse(event.data)) {
                 this.universes.push(new Universe(false, data.colour, data.cells))
             }
             this.universes = this.universes.concat(editableUniverses)
-            $('#multiverseWrapper').html(this.render());
+            // Very "Efficient" re-rendering of all non-editable universes.
+            if (renderUpdates) {
+                this.renderDynamic()
+            }
         }
     }
 
@@ -96,7 +115,6 @@ class Multiverse {
         let table = $('<table class="multiverse">');
         let row
         for (let i = 0; i < this.universes.length; i++) {
-
             if (i % 4 === 0) {
                 row = $('<tr>');
             }
@@ -105,7 +123,20 @@ class Multiverse {
             row.append(td);
             table.append(row);
         }
+        // $('#multiverseWrapper').html(table);
         return table;
+    }
+
+    renderDynamic() {
+        // const NonEditableUniverses = this.universes.filter((universe) => !universe.isEditable);
+        // for (const u of this.universes) {
+        //     console.log(u)
+        // }
+        // // Add editable universe(s).
+        //
+        // $("table.multiverse table.universe").each(function(index, element){
+        //     console.log(index, element);
+        // });
     }
 }
 
@@ -121,9 +152,10 @@ class Universe {
         );
     }
 
-    render() {
+    renderStatic() {
         let universe = this
-        let table = $('<table class="universe">');
+        let table = $('<table class="universe static">');
+
         for (let x = 0; x < this.cells.length; x++) {
             let row = $('<tr>');
             for (let y = 0; y < this.cells[x].length; y++) {
@@ -134,23 +166,67 @@ class Universe {
                 if (this.cells[x][y]) {
                     td.css("background", this.colour)
                 }
-                if (this.isEditable) {
-                    td.addClass("editable")
-                    // Cell onclick handler.
-                    td.on("click", () => {
-                        this.cellOnClickHandler(td, universe)
-                    });
-                    // Hover highlight.
-                    td.hover(
-                        () => this.cellOnHoverInHandler(td, universe),
-                        () => this.cellOnHoverOutHandler(td, universe),
-                    )
-                }
+                td.addClass("editable")
+                // Cell onclick handler.
+                td.on("click", () => {
+                    this.cellOnClickHandler(td, universe)
+                });
+                // Hover highlight.
+                td.hover(
+                    () => this.cellOnHoverInHandler(td, universe),
+                    () => this.cellOnHoverOutHandler(td, universe),
+                )
                 row.append(td);
             }
             table.append(row);
         }
         return table;
+    }
+
+    renderDynamic() {
+        let universe = this
+        let $canvas = $('<canvas width="450" height="450">');
+        let canvas = $canvas[0]
+        let ctx = canvas.getContext("2d")
+
+
+        // Set the size of each cell and the padding between cells
+        const cellSize = 20;
+        const padding = 2;
+
+        // Loop through the matrix and render each cell
+        for (let row = 0; row < universe.cells.length; row++) {
+            for (let col = 0; col < universe.cells[row].length; col++) {
+                const cellValue = universe.cells[row][col];
+
+                // Calculate the position for the current cell
+                const x = col * (cellSize + padding);
+                const y = row * (cellSize + padding);
+
+                // Set the fill color based on the cell value
+                ctx.fillStyle = cellValue === true ? universe.colour : DEAD_CELL_COLOUR;
+
+                // Draw the cell
+                ctx.fillRect(x, y, cellSize, cellSize);
+            }
+        }
+
+
+        // for (let x = 0; x < 20; ++x) {
+        //     for (let y = 0; y < 20; ++y) {
+        //         if (Math.random() < 0.5) {
+        //             ctx.fillRect(x, y, 20, 20);
+        //         }
+        //     }
+        // }
+        return canvas
+    }
+
+    render() {
+        if (this.isEditable) {
+            return this.renderStatic()
+        }
+        return this.renderDynamic()
     }
 
     cellOnClickHandler(td, universe) {
@@ -255,9 +331,8 @@ function initApp() {
         dropButton.hide();
     });
 
-    // Subscribe for updates via WS.
-    mu.consumeUpdates();
-
+    // Subscribe for updates via WS and render them.
+    mu.consumeUpdates(true);
 }
 
 $(document).ready(function () {
