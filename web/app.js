@@ -60,7 +60,7 @@ class APIClient {
                 console.log(response);
             })
             .catch(function (error) {
-                console.log(error);
+                alert(error.response.data);
             });
     }
 }

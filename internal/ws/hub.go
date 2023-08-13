@@ -47,7 +47,6 @@ func (r *Hub) RemoveConnection(c *Connection) bool {
 }
 
 func (r *Hub) Broadcast(data []byte) {
-	fmt.Printf("Broadcasting updates to %d clients.", len(r.connections))
 	for _, connection := range r.connections {
 		connection.SendMessage(data)
 	}

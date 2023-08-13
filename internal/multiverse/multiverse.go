@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/ride90/game-of-life/internal/universe"
-	"log"
 	"strings"
 	"sync"
 )
@@ -12,12 +11,12 @@ import (
 type Multiverse struct {
 	universes [32]*universe.Universe
 	count     int
-	// This lock will be used during evolve + AddUniverse.
+	// This lock will be used during evolve + AppendUniverse.
 	// In theory, during evolve this lock is not needed, since every universe
 	// has its own memory address and concurrent evolving of universes is totally
-	// race-condition free. Even AddUniverse should be safe since it's only
+	// race-condition free. Even AppendUniverse should be safe since it's only
 	// "appending" a universe to an array and there is not much of intersection
-	// with evolve, but it's better to cover AddUniverse with a lock.
+	// with evolve, but it's better to cover AppendUniverse with a lock.
 	lock sync.Mutex
 }
 
@@ -26,11 +25,36 @@ func newMultiverse() *Multiverse {
 	return &mu
 }
 
-func (r *Multiverse) AddUniverse(u *universe.Universe) {
+func (r *Multiverse) AppendUniverse(u *universe.Universe) {
 	r.lock.Lock()
 	defer r.lock.Unlock()
 	r.universes[r.count] = u
 	r.count++
+}
+
+func (r *Multiverse) PrependUniverse(u *universe.Universe) {
+	r.lock.Lock()
+	defer r.lock.Unlock()
+
+	// Ensure we can fit a new universe.
+	if r.IsFull() {
+		return
+	}
+
+	// Move all universes to the left in an array (index++).
+	for i := len(r.universes) - 1; i >= 0; i-- {
+		if r.universes[i] == nil {
+			fmt.Println("skipping", i)
+			continue
+		}
+		r.universes[i+1] = r.universes[i]
+	}
+	r.universes[0] = u
+	r.count++
+}
+
+func (r *Multiverse) IsFull() bool {
+	return r.count >= len(r.universes)
 }
 
 func (r *Multiverse) String() string {
@@ -54,16 +78,11 @@ func (r *Multiverse) RenderMatrices() string {
 }
 
 func (r *Multiverse) Evolve() {
-	// TODO: Remove comments and do proper logging.
-	log.Println("Evolve:", r)
-	log.Println("Evolve: acquiring lock")
 	// Lock & Unlock.
 	r.lock.Lock()
 	defer func() {
-		log.Println("Evolve: releasing lock")
 		r.lock.Unlock()
 	}()
-
 	// Each universe evolves itself in goroutine.
 	var wg sync.WaitGroup
 	for _, u := range r.universes {
@@ -78,7 +97,6 @@ func (r *Multiverse) Evolve() {
 			u.Evolve()
 		}(u, &wg)
 	}
-	log.Println("Evolve: waiting for goroutines to finish.")
 	wg.Wait()
 }
 

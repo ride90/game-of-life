@@ -13,8 +13,7 @@ const (
 )
 
 type Universe struct {
-	// TODO: Think of a better way of decomposition json specific fields/access
-	//  into a separate struct:
+	// TODO: Think of a decomposition json-specific fields.
 	//  - https://attilaolah.eu/2014/09/10/json-and-struct-composition-in-go/
 	Matrix           [30][30]bool `json:"cells"`
 	Colour           string       `json:"colour"`
