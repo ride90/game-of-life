@@ -1,4 +1,4 @@
-const UNIVERSE_SIZE = 20;
+const UNIVERSE_SIZE = 30;
 const DEAD_CELL_COLOUR = "#2c2c2c";
 const EDITABLE_CELL_COLOUR = "#434343";
 const API_URL_BASE = "http://127.0.0.1:4000/api"
@@ -140,7 +140,7 @@ class Multiverse {
             "multiverse"
         );
     }
-    
+
     renderEditable() {
         return this._render(
             this.universes.filter((universe) => universe.isEditable),
@@ -193,15 +193,14 @@ class Universe {
     }
 
     _renderExisting() {
+        // Set the size of each cell and the padding between cells
+        const cellSize = 8;
+        const padding = 1;
+        const size = (cellSize + padding) * UNIVERSE_SIZE
         let universe = this
-        let $canvas = $('<canvas width="260" height="260">');
+        let $canvas = $('<canvas width="' + size + '" height="' + size + '">');
         let canvas = $canvas[0]
         let ctx = canvas.getContext("2d")
-
-
-        // Set the size of each cell and the padding between cells
-        const cellSize = 12;
-        const padding = 1;
 
         // Loop through the matrix and render each cell
         for (let row = 0; row < universe.cells.length; row++) {
