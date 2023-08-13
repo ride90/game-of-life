@@ -10,7 +10,7 @@ import (
 )
 
 type Multiverse struct {
-	universes [16]*universe.Universe
+	universes [32]*universe.Universe
 	count     int
 	// This lock will be used during evolve + AddUniverse.
 	// In theory, during evolve this lock is not needed, since every universe
