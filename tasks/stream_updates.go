@@ -10,7 +10,7 @@ import (
 func StreamUpdates(wsHub *ws.Hub) {
 	// TODO: There should be some kind of lock to see if evolve is busy or not.
 	mv := multiverse.GetInstance()
-	ticker := time.NewTicker(1000 / 8 * time.Millisecond)
+	ticker := time.NewTicker(1000 / 5 * time.Millisecond)
 	// ticker := time.NewTicker(2000 * time.Millisecond)
 
 	for _ = range ticker.C {

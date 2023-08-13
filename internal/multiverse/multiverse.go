@@ -44,7 +44,6 @@ func (r *Multiverse) PrependUniverse(u *universe.Universe) {
 	// Move all universes to the left in an array (index++).
 	for i := len(r.universes) - 1; i >= 0; i-- {
 		if r.universes[i] == nil {
-			fmt.Println("skipping", i)
 			continue
 		}
 		r.universes[i+1] = r.universes[i]
