@@ -8,19 +8,27 @@ import (
 )
 
 func StreamUpdates(wsHub *ws.Hub) {
-	// TODO: There should be some kind of lock to see if evolve is busy or not.
 	mv := multiverse.GetInstance()
 	ticker := time.NewTicker(1000 / 5 * time.Millisecond)
-	// ticker := time.NewTicker(2000 * time.Millisecond)
+	locked := false
 
 	for _ = range ticker.C {
+		// Check if operation is locked.
+		if locked {
+			continue
+		}
+		locked = true
+
 		// Evolve every universe inside multiverse.
 		mv.Evolve()
-		// TODO: Stream updates here..
+		// Prepare json and broadcast it to all ws client.
 		jsonData, err := mv.ToJSON()
 		if err != nil {
 			log.Printf("Error while marshaling multiverse into JSON: %s", err)
 		}
 		wsHub.Broadcast(jsonData)
+
+		// Unlock.
+		locked = false
 	}
 }
