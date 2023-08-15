@@ -2,21 +2,26 @@ package handlers
 
 import (
 	"github.com/gorilla/websocket"
+	config "github.com/ride90/game-of-life"
 	"github.com/ride90/game-of-life/internal/ws"
 	"log"
 	"net/http"
+	"time"
 )
 
 type HandlerWS struct {
 	upgrader websocket.Upgrader
+	config   *config.Config
 }
 
-func NewHandlerWS() HandlerWS {
+func NewHandlerWS(cfg *config.Config) HandlerWS {
 	return HandlerWS{
+		config: cfg,
 		upgrader: websocket.Upgrader{
-			// TODO: Set a reasonable buffer.
-			WriteBufferSize: 1024,
-			CheckOrigin:     func(r *http.Request) bool { return true },
+			WriteBufferSize:  cfg.Server.WsWriteBufferSize,
+			ReadBufferSize:   cfg.Server.WsReadBufferSize,
+			HandshakeTimeout: time.Duration(cfg.Server.WsHandshakeTimeout) * time.Second,
+			CheckOrigin:      func(r *http.Request) bool { return true },
 		},
 	}
 }

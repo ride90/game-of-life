@@ -1,0 +1,17 @@
+# Server configurations
+server:
+  debug: false
+  host: "127.0.0.1"
+  port: 4000
+  write_timeout: 15
+  read_timeout: 15
+  ws_write_buffer_size: 1024
+  ws_read_buffer_size: 1024
+  ws_handshake_timeout: 180
+
+# Game of life related config
+game:
+  fps: 5
+  universe_prepend: false
+
+

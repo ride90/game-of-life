@@ -2,19 +2,21 @@ package handlers
 
 import (
 	"encoding/json"
+	config "github.com/ride90/game-of-life"
 	"github.com/ride90/game-of-life/internal/multiverse"
 	"github.com/ride90/game-of-life/internal/universe"
 	"net/http"
 )
 
-type HandlerAPI struct{}
+type HandlerAPI struct {
+	config *config.Config
+}
 
-func NewHandlerAPI() HandlerAPI {
-	return HandlerAPI{}
+func NewHandlerAPI(cfg *config.Config) HandlerAPI {
+	return HandlerAPI{config: cfg}
 }
 
 func (h HandlerAPI) Health(w http.ResponseWriter, r *http.Request) {
-	// TODO: Implement a proper health check.
 	err := json.NewEncoder(w).Encode("ok")
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
@@ -39,9 +41,14 @@ func (h HandlerAPI) CreateUniverse(w http.ResponseWriter, r *http.Request) {
 	}
 	// Calculate initial universe stats.
 	u.UpdateStats()
+
 	// Add universe into multiverse.
-	// TODO: Make append & prepend approach configurable.
-	mv.PrependUniverse(&u)
+	if h.config.Game.UniversePrepend {
+		mv.PrependUniverse(&u)
+	} else {
+		mv.AppendUniverse(&u)
+	}
+
 	// Write response status.
 	w.WriteHeader(http.StatusCreated)
 }
