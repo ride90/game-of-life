@@ -8,22 +8,25 @@ import (
 	"github.com/ride90/game-of-life/internal/ws"
 	"github.com/ride90/game-of-life/middlewares"
 	"github.com/ride90/game-of-life/tasks"
-	"log"
+	log "github.com/sirupsen/logrus"
 
 	"net/http"
 	"time"
 )
 
-// TODO: Create configs https://dev.to/ilyakaznacheev/a-clean-way-to-pass-configs-in-a-go-application-1g64
+var cfg *config.Config
+var wsHub *ws.Hub
+
+func init() {
+	// Config.
+	// TODO: Think of a better approach how to include config in handlers/tasks.
+	cfg = config.NewConfig()
+
+	// Manager for WS connection.
+	wsHub = ws.NewHub()
+}
 
 func main() {
-	// Load config.
-	// TODO: Think of a better approach of how to auto include config in handlers/tasks.
-	cfg := config.NewConfig()
-
-	// Container for websocket connection.
-	wsHub := ws.NewHub()
-
 	// Evolve universes & stream updates via ws to clients.
 	go tasks.StreamUpdates(wsHub, cfg)
 
