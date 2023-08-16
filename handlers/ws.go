@@ -2,7 +2,7 @@ package handlers
 
 import (
 	"github.com/gorilla/websocket"
-	config "github.com/ride90/game-of-life"
+	"github.com/ride90/game-of-life/configs"
 	"github.com/ride90/game-of-life/internal/ws"
 	"log"
 	"net/http"
@@ -11,10 +11,10 @@ import (
 
 type HandlerWS struct {
 	upgrader websocket.Upgrader
-	config   *config.Config
+	config   *configs.Config
 }
 
-func NewHandlerWS(cfg *config.Config) HandlerWS {
+func NewHandlerWS(cfg *configs.Config) HandlerWS {
 	return HandlerWS{
 		config: cfg,
 		upgrader: websocket.Upgrader{

@@ -3,27 +3,30 @@ package main
 import (
 	"fmt"
 	"github.com/gorilla/mux"
-	config "github.com/ride90/game-of-life"
+	logger "github.com/ride90/game-of-life"
+	"github.com/ride90/game-of-life/configs"
 	"github.com/ride90/game-of-life/handlers"
 	"github.com/ride90/game-of-life/internal/ws"
 	"github.com/ride90/game-of-life/middlewares"
 	"github.com/ride90/game-of-life/tasks"
 	log "github.com/sirupsen/logrus"
-
 	"net/http"
 	"time"
 )
 
-var cfg *config.Config
+var cfg *configs.Config
 var wsHub *ws.Hub
 
 func init() {
 	// Config.
 	// TODO: Think of a better approach how to include config in handlers/tasks.
-	cfg = config.NewConfig()
+	cfg = configs.NewConfig()
 
 	// Manager for WS connection.
 	wsHub = ws.NewHub()
+
+	// Setup a logger.
+	logger.SetupLogger(cfg)
 }
 
 func main() {
@@ -32,7 +35,7 @@ func main() {
 
 	router := mux.NewRouter()
 	// Global middlewares.
-	router.Use(middlewares.MiddlewareLogging)
+	router.Use(middlewares.MiddlewareLogRequest)
 
 	// API middlewares.
 	routerAPI := router.PathPrefix("/api").Subrouter()
@@ -65,6 +68,6 @@ func main() {
 		WriteTimeout: time.Duration(cfg.Server.WriteTimeout) * time.Second,
 		ReadTimeout:  time.Duration(cfg.Server.ReadTimeout) * time.Second,
 	}
-	log.Println("Running", addr)
+	log.Info("Running server on", addr)
 	log.Fatal(srv.ListenAndServe())
 }

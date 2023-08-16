@@ -11,7 +11,13 @@ server:
 
 # Game of life related config
 game:
-  fps: 5
+  fps: 8
   universe_prepend: false
+
+# Logging related config
+log:
+  # Options: panic, fatal, error, warn, info, debug, trace
+  level: info
+  set_report_caller: false
 
 

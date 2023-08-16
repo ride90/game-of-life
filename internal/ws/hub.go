@@ -3,7 +3,7 @@ package ws
 import (
 	"fmt"
 	"github.com/gorilla/websocket"
-	"log"
+	log "github.com/sirupsen/logrus"
 )
 
 type Hub struct {
@@ -23,6 +23,7 @@ func (r *Hub) String() string {
 }
 
 func (r *Hub) AddConnection(c *Connection) {
+	log.Debug("Adding new", c)
 	r.connections = append(r.connections, c)
 }
 
@@ -33,11 +34,11 @@ func (r *Hub) RemoveConnection(c *Connection) bool {
 			defer func(Conn *websocket.Conn) {
 				err := Conn.Close()
 				if err != nil {
-					log.Println("Error closing ws connection:", err)
+					log.Debug("Closing WS connection:", err)
 				}
 			}(r.connections[i].Conn)
 			// Remove from the hub.
-			log.Println("WS Hub removing:", r.connections[i])
+			log.Debug("WS Hub removing:", r.connections[i])
 			r.connections[i] = r.connections[len(r.connections)-1]
 			r.connections = r.connections[:len(r.connections)-1]
 			return true
@@ -47,6 +48,7 @@ func (r *Hub) RemoveConnection(c *Connection) bool {
 }
 
 func (r *Hub) Broadcast(data []byte) {
+	log.Debugf("Broadcasting message to %d clients", len(r.connections))
 	for _, connection := range r.connections {
 		connection.SendMessage(data)
 	}

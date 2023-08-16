@@ -23,8 +23,8 @@ type Universe struct {
 
 func (r *Universe) String() string {
 	return fmt.Sprintf(
-		"Colour: %s\nGeneration %d\nAlive: %d\n%s",
-		r.Colour, r.generationNumber, r.aliveCellsCount, r.RenderMatrix(),
+		"Colour: %s Generation %d Alive: %d",
+		r.Colour, r.generationNumber, r.aliveCellsCount,
 	)
 }
 
