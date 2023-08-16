@@ -34,8 +34,8 @@ func (h HandlerAPI) CreateUniverse(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var u universe.Universe
 	// Decode from stream into Universe struct instance.
+	var u universe.Universe
 	err := json.NewDecoder(r.Body).Decode(&u)
 	if err != nil {
 		log.Error(err)

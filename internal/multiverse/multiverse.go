@@ -82,6 +82,7 @@ func (r *Multiverse) Evolve() {
 	defer func() {
 		r.lock.Unlock()
 	}()
+
 	// Each universe evolves itself in goroutine.
 	var wg sync.WaitGroup
 	for _, u := range r.universes {
@@ -106,11 +107,11 @@ func (r *Multiverse) ToJSON() ([]byte, error) {
 // Create an empty multiverse.
 // This variable will be accessible from multiple places/goroutines.
 // Lock is used to avoid a race-conditions.
-// Singleton anti-pattern is used rather for learning purpose (works fine btw).
 var mvCreateInstanceLock = &sync.Mutex{}
 var mvInstance *Multiverse
 
 func GetInstance() *Multiverse {
+	// Singleton anti-pattern is used rather for learning purpose (works fine btw).
 	if mvInstance == nil {
 		mvCreateInstanceLock.Lock()
 		defer mvCreateInstanceLock.Unlock()

@@ -35,6 +35,7 @@ func (r *Connection) ReadMessages() {
 			break
 		}
 	}
+
 	// Connection closed.
 	r.Hub.RemoveConnection(r)
 }

@@ -37,6 +37,7 @@ func (r *Hub) RemoveConnection(c *Connection) bool {
 					log.Debug("Closing WS connection:", err)
 				}
 			}(r.connections[i].Conn)
+
 			// Remove from the hub.
 			log.Debug("WS Hub removing:", r.connections[i])
 			r.connections[i] = r.connections[len(r.connections)-1]

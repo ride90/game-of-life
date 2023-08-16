@@ -28,8 +28,10 @@ func (receiver HandlerSPA) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
+
 	// Prepend the path with the path to the web directory.
 	path = filepath.Join(receiver.staticPath, path)
+
 	// Check if a file exists.
 	_, err = os.Stat(path)
 	if os.IsNotExist(err) {
@@ -41,6 +43,7 @@ func (receiver HandlerSPA) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+
 	// Otherwise, use http.FileServer to serve the web dir
 	http.FileServer(http.Dir(receiver.staticPath)).ServeHTTP(w, r)
 }
