@@ -20,8 +20,9 @@ type Config struct {
 	} `yaml:"server"`
 
 	Game struct {
-		Fps             int  `yaml:"fps", envconfig:"GAME_FPS"`
-		UniversePrepend bool `yaml:"universe_prepend", envconfig:"GAME_UNIVERSE_PREPEND"`
+		Fps                       int  `yaml:"fps", envconfig:"GAME_FPS"`
+		UniversePrepend           bool `yaml:"universe_prepend", envconfig:"GAME_UNIVERSE_PREPEND"`
+		RemoveStaticUniverseAfter int  `yaml:"remove_static_universe_after", envconfig:"GAME_REMOVE_STATIC_UNIVERSE_AFTER"`
 	} `yaml:"game"`
 
 	Log struct {

@@ -13,6 +13,7 @@ server:
 game:
   fps: 8
   universe_prepend: false
+  remove_static_universe_after: 30
 
 # Logging related config
 log:

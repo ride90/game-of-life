@@ -3,7 +3,7 @@ package ws
 import (
 	"fmt"
 	"github.com/gorilla/websocket"
-	"log"
+	log "github.com/sirupsen/logrus"
 	"sync"
 )
 
@@ -29,9 +29,9 @@ func (r *Connection) ReadMessages() {
 		_, _, err := r.Conn.ReadMessage()
 		if err != nil {
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway) {
-				log.Printf("Error reading message: %v", err)
+				log.Error("Error reading message: %v", err)
 			}
-			log.Println("Connection closed by the client.")
+			log.Debug("Connection closed by the client.")
 			break
 		}
 	}
@@ -43,6 +43,6 @@ func (r *Connection) ReadMessages() {
 func (r *Connection) SendMessage(data []byte) {
 	err := r.Conn.WriteMessage(websocket.TextMessage, data)
 	if err != nil {
-		log.Printf("Error while sending a message. %s. Error: %s", r, err)
+		log.Error("Error while sending a message. %s. Error: %s", r, err)
 	}
 }

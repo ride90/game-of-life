@@ -2,7 +2,9 @@ package universe
 
 import (
 	"fmt"
+	"hash/fnv"
 	"strings"
+	"time"
 )
 
 const (
@@ -17,14 +19,17 @@ type Universe struct {
 	//  - https://attilaolah.eu/2014/09/10/json-and-struct-composition-in-go/
 	Matrix           [30][30]bool `json:"cells"`
 	Colour           string       `json:"colour"`
+	IsStatic         bool         `json:"-"`
+	StaticFrom       time.Time    `json:"-"`
 	generationNumber int          `json:"-"`
 	aliveCellsCount  int          `json:"-"`
+	matrixHash       uint64       `json:"-"`
 }
 
 func (r *Universe) String() string {
 	return fmt.Sprintf(
-		"Colour: %s Generation %d Alive: %d",
-		r.Colour, r.generationNumber, r.aliveCellsCount,
+		"Colour: %s Static: %t Generation %d Alive: %d",
+		r.Colour, r.IsStatic, r.generationNumber, r.aliveCellsCount,
 	)
 }
 
@@ -54,8 +59,26 @@ func (r *Universe) RenderMatrix() string {
 }
 
 func (r *Universe) Evolve() {
-	nextGenMatrix := r.Matrix
+	// No sense to compute static universe.
+	if r.IsStatic {
+		r.generationNumber++
+		return
+	}
 
+	// Calculate matrix hash & compare with a previous one.
+	// If hashes are equal then it means universe is static, and it's not going
+	// to evolve, in this case no sense to compute it anymore.
+	matrixHash := getMatrixHash(r.Matrix)
+	if matrixHash == r.matrixHash {
+		r.IsStatic = true
+		r.StaticFrom = time.Now().UTC()
+		r.generationNumber++
+		return
+	}
+	r.matrixHash = matrixHash
+
+	// Run game of live algorithm.
+	nextGenMatrix := r.Matrix
 	r.aliveCellsCount = 0
 	for y := range r.Matrix {
 		for x := range r.Matrix[y] {
@@ -124,4 +147,18 @@ func (r *Universe) neighboursCount(x, y int) int {
 		neighbours++
 	}
 	return neighbours
+}
+
+func getMatrixHash(matrix [30][30]bool) uint64 {
+	hasher := fnv.New64a()
+	for y := range matrix {
+		for x := range matrix[y] {
+			if matrix[y][x] {
+				hasher.Write([]byte{1})
+			} else {
+				hasher.Write([]byte{0})
+			}
+		}
+	}
+	return hasher.Sum64()
 }

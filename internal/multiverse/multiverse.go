@@ -4,8 +4,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/ride90/game-of-life/internal/universe"
+	log "github.com/sirupsen/logrus"
 	"strings"
 	"sync"
+	"time"
 )
 
 type Multiverse struct {
@@ -98,6 +100,16 @@ func (r *Multiverse) Evolve() {
 		}(u, &wg)
 	}
 	wg.Wait()
+
+	// Remove old static universes.
+	for _, u := range r.universes {
+		if u != nil && u.IsStatic {
+			duration := time.Now().UTC().Sub(u.StaticFrom)
+			if 10 <= int(duration.Seconds()) {
+				log.Infoln("Removing static", u)
+			}
+		}
+	}
 }
 
 func (r *Multiverse) ToJSON() ([]byte, error) {
