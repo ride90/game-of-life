@@ -3,6 +3,7 @@ package multiverse
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/ride90/game-of-life/configs"
 	"github.com/ride90/game-of-life/internal/universe"
 	log "github.com/sirupsen/logrus"
 	"strings"
@@ -43,7 +44,7 @@ func (r *Multiverse) PrependUniverse(u *universe.Universe) {
 		return
 	}
 
-	// Move all universes to the left in an array (index++).
+	// Move all universes to the right in an array (index++).
 	for i := len(r.universes) - 1; i >= 0; i-- {
 		if r.universes[i] == nil {
 			continue
@@ -52,6 +53,14 @@ func (r *Multiverse) PrependUniverse(u *universe.Universe) {
 	}
 	r.universes[0] = u
 	r.count++
+}
+
+func (r *Multiverse) removeStaticUniverses() {
+
+	// // Remove a reference -> garbage collected.
+	// r.universes[indexToRemove] = nil
+	//
+
 }
 
 func (r *Multiverse) IsFull() bool {
@@ -78,7 +87,7 @@ func (r *Multiverse) RenderMatrices() string {
 	return matricesStringBuilder.String()
 }
 
-func (r *Multiverse) Evolve() {
+func (r *Multiverse) Evolve(cfg *configs.Config) {
 	// Lock & Unlock.
 	r.lock.Lock()
 	defer func() {
@@ -101,14 +110,34 @@ func (r *Multiverse) Evolve() {
 	}
 	wg.Wait()
 
-	// Remove old static universes.
-	for _, u := range r.universes {
+	// Remove stale static universes.
+	indicesToRemove := make([]int, 0, 8)
+	for i, u := range r.universes {
 		if u != nil && u.IsStatic {
 			duration := time.Now().UTC().Sub(u.StaticFrom)
-			if 10 <= int(duration.Seconds()) {
-				log.Infoln("Removing static", u)
+			if cfg.Game.RemoveStaticUniverseAfter <= int(duration.Seconds()) {
+				indicesToRemove = append(indicesToRemove, i)
 			}
 		}
+	}
+	if len(indicesToRemove) > 0 {
+		// Remove references to stale universes -> garbage collected.
+		for _, i := range indicesToRemove {
+			log.Info("Removing stale static", r.universes[i])
+			r.universes[i] = nil
+		}
+		// Squash left non-nil elements.
+		tmpArr := [32]*universe.Universe{}
+		tmpIndex := 0
+		for i := range r.universes {
+			if r.universes[i] == nil {
+				continue
+			}
+			tmpArr[tmpIndex] = r.universes[i]
+			tmpIndex++
+		}
+		r.universes = tmpArr
+		r.count = tmpIndex
 	}
 }
 

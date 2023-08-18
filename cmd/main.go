@@ -19,7 +19,7 @@ var wsHub *ws.Hub
 
 func init() {
 	// Config.
-	// TODO: Think of a better approach how to include config in handlers/tasks.
+	// TODO: Think of a better approach how to include config in handlers/tasks/internals.
 	cfg = configs.NewConfig()
 
 	// Manager for WS connection.
@@ -68,6 +68,6 @@ func main() {
 		WriteTimeout: time.Duration(cfg.Server.WriteTimeout) * time.Second,
 		ReadTimeout:  time.Duration(cfg.Server.ReadTimeout) * time.Second,
 	}
-	log.Info("Running server on", addr)
+	log.Info("Running server on ", addr)
 	log.Fatal(srv.ListenAndServe())
 }

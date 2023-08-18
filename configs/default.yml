@@ -11,7 +11,7 @@ server:
 
 # Game of life related config
 game:
-  fps: 8
+  fps: 6
   universe_prepend: false
   remove_static_universe_after: 30
 

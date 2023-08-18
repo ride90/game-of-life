@@ -269,7 +269,7 @@ function getRandomColor() {
         }
 
         let luminance = getLuminance(color);
-        if (luminance > 0.1 && luminance < 0.9) {
+        if (luminance > 0.6 && luminance < 0.9) {
             // Check that the color is different enough from the last color
             if (lastColor === null || colorDistance(color, lastColor) > 100) {
                 break;

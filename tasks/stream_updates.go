@@ -21,7 +21,7 @@ func StreamUpdates(wsHub *ws.Hub, cfg *configs.Config) {
 		locked = true
 
 		// Evolve every universe inside multiverse.
-		mv.Evolve()
+		mv.Evolve(cfg)
 		// Prepare json and broadcast it to all ws client.
 		jsonData, err := mv.ToJSON()
 		if err != nil {

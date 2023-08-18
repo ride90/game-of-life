@@ -42,12 +42,12 @@ func (h HandlerAPI) CreateUniverse(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	log.Infoln("Created new universe", &u)
+
 	// Calculate initial universe stats.
 	u.UpdateStats()
+	log.Infoln("Created new universe", &u)
 
 	// Add universe into multiverse.
-	log.Info("Adding universe into multiverse.")
 	if h.config.Game.UniversePrepend {
 		mv.PrependUniverse(&u)
 	} else {
