@@ -3,6 +3,12 @@ body {
     color: #f00;
 }
 
+button {
+    border: 0;
+    color: #d10707;
+    background-color: #3a1c1c;
+}
+
 #new, #save, #drop {
     display: none;
 }

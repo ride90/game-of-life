@@ -17,7 +17,7 @@ const (
 type Universe struct {
 	// TODO: Think of a decomposition json-specific fields.
 	//  - https://attilaolah.eu/2014/09/10/json-and-struct-composition-in-go/
-	Matrix           [30][30]bool `json:"cells"`
+	Matrix           [50][50]bool `json:"cells"`
 	Colour           string       `json:"colour"`
 	IsStatic         bool         `json:"-"`
 	StaticFrom       time.Time    `json:"-"`
@@ -149,7 +149,7 @@ func (r *Universe) neighboursCount(x, y int) int {
 	return neighbours
 }
 
-func getMatrixHash(matrix [30][30]bool) uint64 {
+func getMatrixHash(matrix [50][50]bool) uint64 {
 	hasher := fnv.New64a()
 	for y := range matrix {
 		for x := range matrix[y] {

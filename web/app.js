@@ -1,4 +1,4 @@
-const UNIVERSE_SIZE = 30;
+const UNIVERSE_SIZE = 50;
 const DEAD_CELL_COLOUR = "#2c2c2c";
 const EDITABLE_CELL_COLOUR = "#434343";
 const API_URL_BASE = "http://127.0.0.1:4000/api"
@@ -194,7 +194,7 @@ class Universe {
 
     _renderExisting() {
         // Set the size of each cell and the padding between cells
-        const cellSize = 8;
+        const cellSize = 6;
         const padding = 1;
         const size = (cellSize + padding) * UNIVERSE_SIZE
         let universe = this
