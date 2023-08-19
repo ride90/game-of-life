@@ -18,13 +18,14 @@ const (
 type Universe struct {
 	// TODO: Think of a decomposition json-specific fields.
 	//  - https://attilaolah.eu/2014/09/10/json-and-struct-composition-in-go/
-	Matrix           [50][50]bool `json:"cells"`
-	Colour           string       `json:"colour"`
-	IsStatic         bool         `json:"-"`
-	StaticFrom       time.Time    `json:"-"`
-	generationNumber int          `json:"-"`
-	aliveCellsCount  int          `json:"-"`
-	matrixHash       uint64       `json:"-"`
+	Matrix     [][]bool  `json:"cells"`
+	Colour     string    `json:"colour"`
+	IsStatic   bool      `json:"-"`
+	StaticFrom time.Time `json:"-"`
+	// TODO: is `json:"-"` redundant?
+	generationNumber int    `json:"-"`
+	aliveCellsCount  int    `json:"-"`
+	matrixHash       uint64 `json:"-"`
 }
 
 // String returns a string representation of the Universe
@@ -83,8 +84,15 @@ func (r *Universe) Evolve() {
 	}
 	r.matrixHash = matrixHash
 
+	// Create a second matrix.
+	var nextGenMatrix [][]bool
+	nextGenMatrix = make([][]bool, len(r.Matrix))
+	for i := range nextGenMatrix {
+		nextGenMatrix[i] = make([]bool, len(r.Matrix[i]))
+		copy(nextGenMatrix[i], r.Matrix[i])
+	}
+
 	// Run game of live algorithm.
-	nextGenMatrix := r.Matrix
 	r.aliveCellsCount = 0
 	for y := range r.Matrix {
 		for x := range r.Matrix[y] {
@@ -156,7 +164,7 @@ func (r *Universe) neighboursCount(x, y int) int {
 }
 
 // getMatrixHash calculates a hash value for the given matrix
-func getMatrixHash(matrix [50][50]bool) uint64 {
+func getMatrixHash(matrix [][]bool) uint64 {
 	hasher := fnv.New64a()
 	for y := range matrix {
 		for x := range matrix[y] {
