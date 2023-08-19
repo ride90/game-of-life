@@ -12,7 +12,7 @@ import (
 )
 
 type Multiverse struct {
-	universes [32]*universe.Universe
+	universes [24]*universe.Universe
 	count     int
 	// This lock will be used during evolve + AppendUniverse.
 	// In theory, during evolve this lock is not needed, since every universe
@@ -127,7 +127,7 @@ func (r *Multiverse) Evolve(cfg *configs.Config) {
 			r.universes[i] = nil
 		}
 		// Squash left non-nil elements.
-		tmpArr := [32]*universe.Universe{}
+		tmpArr := [24]*universe.Universe{}
 		tmpIndex := 0
 		for i := range r.universes {
 			if r.universes[i] == nil {
@@ -139,6 +139,12 @@ func (r *Multiverse) Evolve(cfg *configs.Config) {
 		r.universes = tmpArr
 		r.count = tmpIndex
 	}
+}
+
+func (r *Multiverse) Reset() {
+	log.Infoln("Reset multiverse", r)
+	r.universes = [24]*universe.Universe{}
+	r.count = 0
 }
 
 func (r *Multiverse) ToJSON() ([]byte, error) {

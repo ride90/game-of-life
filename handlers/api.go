@@ -57,3 +57,12 @@ func (h HandlerAPI) CreateUniverse(w http.ResponseWriter, r *http.Request) {
 	// Write response status.
 	w.WriteHeader(http.StatusCreated)
 }
+
+func (h HandlerAPI) ResetMultiverse(w http.ResponseWriter, r *http.Request) {
+	// Reset multiverse.
+	mv := multiverse.GetInstance()
+	mv.Reset()
+
+	// Write response status.
+	w.WriteHeader(http.StatusOK)
+}

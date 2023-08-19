@@ -63,6 +63,16 @@ class APIClient {
                 alert(error.response.data);
             });
     }
+
+    resetMultiverse() {
+        this.axios.post(API_URL_BASE + "/bigbang", {})
+            .then(function (response) {
+                console.log(response);
+            })
+            .catch(function (error) {
+                alert(error.response.data);
+            });
+    }
 }
 
 
@@ -89,6 +99,10 @@ class Multiverse {
         // Create universe on the server.
         this.apiClient.createUniverse(universe.colour, universe.cells)
 
+    }
+
+    reset() {
+        this.apiClient.resetMultiverse()
     }
 
     dropNewUniverse() {
@@ -304,6 +318,7 @@ function initApp() {
     let newButton = $("#new")
     let saveButton = $("#save")
     let dropButton = $("#drop")
+    let resetButton = $("#reset")
     // New universe btn handler.
     newButton.show();
     newButton.on("click", () => {
@@ -327,6 +342,12 @@ function initApp() {
         newButton.show();
         saveButton.hide();
         dropButton.hide();
+    });
+    // Reset universe btn handler.
+    resetButton.on("click", () => {
+        if (confirm("Are you sure you want to destroy everything?") == true) {
+            mu.reset()
+        }
     });
 
     // Get updates and rerender them.

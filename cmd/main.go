@@ -45,6 +45,7 @@ func main() {
 	apiHandler := handlers.NewHandlerAPI(cfg)
 	routerAPI.HandleFunc("/health", apiHandler.Health).Methods(http.MethodGet)
 	routerAPI.HandleFunc("/universe", apiHandler.CreateUniverse).Methods(http.MethodPost)
+	routerAPI.HandleFunc("/bigbang", apiHandler.ResetMultiverse).Methods(http.MethodPost)
 
 	// WS handler.
 	wsHandler := handlers.NewHandlerWS(cfg)
