@@ -93,7 +93,7 @@ class Multiverse {
 
     // Create a new universe
     createNewUniverse(isEditable) {
-        let universe = new Universe(true, getRandomColor());
+        let universe = new Universe(true, getRandomBrightColor());
         universe.isEditable = isEditable;
         this.universes.push(universe);
     }
@@ -284,49 +284,47 @@ class Universe {
     }
 }
 
-// Global variable to keep track of the last color
-let lastColor = null;
+// List of predefined bright colors
+const brightColors = [
+    "#fa725a", // Orange
+    "#FDCB58", // Yellow
+    "#7DCEA0", // Green
+    "#3498DB", // Blue
+    "#9B59B6", // Purple
+    "#1ABC9C", // Turquoise
+    "#2ECC71", // Emerald
+    "#27AE60", // Nephritis
+    "#16A085", // Green Sea
+    "#2980B9", // Peter River
+    "#8E44AD", // Wisteria
+    "#2C3E50"  // Midnight Blue
+];
 
-// Calculate the distance between two colors
-function colorDistance(color1, color2) {
-    return Math.sqrt(
-        Math.pow(parseInt(color1.substr(1, 2), 16) - parseInt(color2.substr(1, 2), 16), 2) +
-        Math.pow(parseInt(color1.substr(3, 2), 16) - parseInt(color2.substr(3, 2), 16), 2) +
-        Math.pow(parseInt(color1.substr(5, 2), 16) - parseInt(color2.substr(5, 2), 16), 2)
-    );
+// Global variable to keep track of the last color index
+let lastColorIndex = null;
+
+// Function to get a random index that is different from the last index
+function getRandomIndex(excludeIndex, arrayLength) {
+    let newIndex = Math.floor(Math.random() * arrayLength);
+    while (newIndex === excludeIndex) {
+        newIndex = Math.floor(Math.random() * arrayLength);
+    }
+    return newIndex;
 }
 
-// Generate a random color
-function getRandomColor() {
-    let letters = '0123456789ABCDEF';
-    let color = '#';
+// Function to get a random bright color that was not picked previously
+function getRandomBrightColor() {
+    const colorCount = brightColors.length;
 
-    while (true) {
-        for (let i = 0; i < 6; i++) {
-            color += letters[Math.floor(Math.random() * 16)];
-        }
-
-        let luminance = getLuminance(color);
-        if (luminance > 0.6 && luminance < 0.9) {
-            // Check that the color is different enough from the last color
-            if (lastColor === null || colorDistance(color, lastColor) > 100) {
-                break;
-            }
-        }
-        color = '#'; // Reset the color if it doesn't meet the criteria
+    // Ensure there's more than one color to pick from
+    if (colorCount <= 1) {
+        return brightColors[0];
     }
 
-    lastColor = color;
-    return color;
-}
+    let newIndex = getRandomIndex(lastColorIndex, colorCount);
 
-// Calculate the luminance of a color
-function getLuminance(color) {
-    let r = parseInt(color.substr(1, 2), 16);
-    let g = parseInt(color.substr(3, 2), 16);
-    let b = parseInt(color.substr(5, 2), 16);
-
-    return (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
+    lastColorIndex = newIndex;
+    return brightColors[newIndex];
 }
 
 // Create a new universe and update UI
