@@ -14,6 +14,7 @@ const (
 	aliveValue  = true
 )
 
+// Universe represents an individual cellular universe
 type Universe struct {
 	// TODO: Think of a decomposition json-specific fields.
 	//  - https://attilaolah.eu/2014/09/10/json-and-struct-composition-in-go/
@@ -26,6 +27,7 @@ type Universe struct {
 	matrixHash       uint64       `json:"-"`
 }
 
+// String returns a string representation of the Universe
 func (r *Universe) String() string {
 	return fmt.Sprintf(
 		"Colour: %s Static: %t Generation %d Alive: %d",
@@ -33,6 +35,7 @@ func (r *Universe) String() string {
 	)
 }
 
+// UpdateStats updates the count of alive cells in the Universe
 func (r *Universe) UpdateStats() {
 	for _, row := range r.Matrix {
 		for _, cell := range row {
@@ -43,6 +46,8 @@ func (r *Universe) UpdateStats() {
 	}
 }
 
+// RenderMatrix renders the Universe matrix as a string
+// Used for debug purposes.
 func (r *Universe) RenderMatrix() string {
 	var matrixStringBuilder strings.Builder
 	for _, row := range r.Matrix {
@@ -58,6 +63,7 @@ func (r *Universe) RenderMatrix() string {
 	return matrixStringBuilder.String()
 }
 
+// Evolve evolves the Universe according to Conway's Game of Life rules
 func (r *Universe) Evolve() {
 	// No sense to compute static universe.
 	if r.IsStatic {
@@ -149,6 +155,7 @@ func (r *Universe) neighboursCount(x, y int) int {
 	return neighbours
 }
 
+// getMatrixHash calculates a hash value for the given matrix
 func getMatrixHash(matrix [50][50]bool) uint64 {
 	hasher := fnv.New64a()
 	for y := range matrix {

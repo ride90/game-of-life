@@ -1,36 +1,39 @@
+// Constants
 const UNIVERSE_SIZE = 50;
 const DEAD_CELL_COLOUR = "#2c2c2c";
 const EDITABLE_CELL_COLOUR = "#434343";
-const API_URL_BASE = "http://127.0.0.1:4000/api"
-const API_REQUEST_TIMEOUT = 5000
-const WS_UPDATES_URL = "ws://127.0.0.1:4000/ws/updates"
+const API_URL_BASE = "http://127.0.0.1:4000/api";
+const API_REQUEST_TIMEOUT = 5000;
+const WS_UPDATES_URL = "ws://127.0.0.1:4000/ws/updates";
 
-
+// APIClient for making HTTP and WebSocket requests
 class APIClient {
     constructor() {
         // Setup http client.
-        this.initHTTP()
+        this.initHTTP();
         // Setup WS client.
-        this.initWS()
+        this.initWS();
     }
 
+    // Initialize HTTP client
     initHTTP() {
         this.axios = axios.create({
             baseURL: API_URL_BASE,
-            timeout: API_REQUEST_TIMEOUT
+            timeout: API_REQUEST_TIMEOUT,
         });
     }
 
+    // Initialize WebSocket client
     initWS() {
         const self = this;
         this.ws = new WebSocket(WS_UPDATES_URL);
         this.ws.onopen = () => {
             console.log("WS successfully connected.");
         };
-        this.ws.onclose = event => {
+        this.ws.onclose = (event) => {
             console.log("WS closed connection:", event);
         };
-        this.ws.onerror = error => {
+        this.ws.onerror = (error) => {
             console.log("WS error: ", error);
         };
         this.ws.onclose = function (e) {
@@ -41,6 +44,7 @@ class APIClient {
         };
     }
 
+    // Check server health
     health() {
         this.axios.get(API_URL_BASE + "/health")
             .then(function (response) {
@@ -48,13 +52,14 @@ class APIClient {
             })
             .catch(function (error) {
                 console.log(error);
-            })
+            });
     }
 
+    // Create a new universe
     createUniverse(colour, cells) {
         this.axios.post(API_URL_BASE + "/universe", {
             colour: colour,
-            cells: cells
+            cells: cells,
         })
             .then(function (response) {
                 console.log(response);
@@ -64,6 +69,7 @@ class APIClient {
             });
     }
 
+    // Reset the multiverse
     resetMultiverse() {
         this.axios.post(API_URL_BASE + "/bigbang", {})
             .then(function (response) {
@@ -75,79 +81,86 @@ class APIClient {
     }
 }
 
-
+// Multiverse for managing universes
 class Multiverse {
     constructor(universes) {
-        this.universes = universes || []
-        this.isEditable = true
+        this.universes = universes || [];
+        this.isEditable = true;
         // Get API client and health ping server.
-        this.apiClient = new APIClient()
-        this.apiClient.health()
+        this.apiClient = new APIClient();
+        this.apiClient.health();
     }
 
+    // Create a new universe
     createNewUniverse(isEditable) {
         let universe = new Universe(true, getRandomColor());
         universe.isEditable = isEditable;
-        this.universes.push(universe)
+        this.universes.push(universe);
     }
 
+    // Save the most recent universe
     saveNewUniverse() {
         // TODO: Save only not empty one.
-        let universe = this.universes[this.universes.length - 1]
+        let universe = this.universes[this.universes.length - 1];
         // Save universe locally.
-        universe.isEditable = false
+        universe.isEditable = false;
         // Create universe on the server.
-        this.apiClient.createUniverse(universe.colour, universe.cells)
-
+        this.apiClient.createUniverse(universe.colour, universe.cells);
     }
 
+    // Reset the multiverse
     reset() {
-        this.apiClient.resetMultiverse()
+        this.apiClient.resetMultiverse();
     }
 
+    // Remove the most recently created universe
     dropNewUniverse() {
         this.universes.pop();
     }
 
+    // Consume updates from the WebSocket server
     consumeUpdates(onUpdate) {
-        this.apiClient.ws.onmessage = event => {
+        this.apiClient.ws.onmessage = (event) => {
             // Get updates from the server.
             const editableUniverses = this.universes.filter((universe) => universe.isEditable);
-            this.universes = []
+            this.universes = [];
             for (const data of JSON.parse(event.data)) {
-                this.universes.push(new Universe(false, data.colour, data.cells))
+                this.universes.push(new Universe(false, data.colour, data.cells));
             }
-            this.universes = this.universes.concat(editableUniverses)
+            this.universes = this.universes.concat(editableUniverses);
             // Very "Efficient" re-rendering of all non-editable universes.
             if (onUpdate) {
-                onUpdate()
+                onUpdate();
             }
-        }
+        };
     }
 
+    // Render the multiverse
     render() {
         let wrapper = $('<div>');
-        wrapper.append(this.renderExisting())
-        wrapper.append(this.renderEditable())
-        return wrapper
+        wrapper.append(this.renderExisting());
+        wrapper.append(this.renderEditable());
+        return wrapper;
     }
 
+    // Render a set of universes
     _render(universes, containerClass) {
         let table = $('<table>');
-        table.addClass(containerClass)
-        let row
+        table.addClass(containerClass);
+        let row;
         for (let i = 0; i < universes.length; i++) {
             if (i % 4 === 0) {
                 row = $('<tr>');
             }
             let td = $('<td>');
-            td.append(universes[i].render())
+            td.append(universes[i].render());
             row.append(td);
             table.append(row);
         }
         return table;
     }
 
+    // Render existing universes
     renderExisting() {
         return this._render(
             this.universes.filter((universe) => !universe.isEditable),
@@ -155,6 +168,7 @@ class Multiverse {
         );
     }
 
+    // Render editable universes
     renderEditable() {
         return this._render(
             this.universes.filter((universe) => universe.isEditable),
@@ -163,9 +177,10 @@ class Multiverse {
     }
 }
 
-let mu = new Multiverse([])
+// Create an instance of Multiverse
+let mu = new Multiverse([]);
 
-
+// Universe class representing an individual universe
 class Universe {
     constructor(isEditable, colour, cells) {
         this.isEditable = isEditable;
@@ -175,8 +190,9 @@ class Universe {
         );
     }
 
+    // Render an editable universe
     _renderEditable() {
-        let universe = this
+        let universe = this;
         let table = $('<table class="universe">');
 
         for (let x = 0; x < this.cells.length; x++) {
@@ -187,18 +203,18 @@ class Universe {
                 td.attr("y", y);
                 // Highlight cell if it's alive.
                 if (this.cells[x][y]) {
-                    td.css("background", this.colour)
+                    td.css("background", this.colour);
                 }
-                td.addClass("editable")
+                td.addClass("editable");
                 // Cell onclick handler.
                 td.on("click", () => {
-                    this.cellOnClickHandler(td, universe)
+                    this.cellOnClickHandler(td, universe);
                 });
                 // Hover highlight.
                 td.hover(
                     () => this.cellOnHoverInHandler(td, universe),
-                    () => this.cellOnHoverOutHandler(td, universe),
-                )
+                    () => this.cellOnHoverOutHandler(td, universe)
+                );
                 row.append(td);
             }
             table.append(row);
@@ -206,15 +222,16 @@ class Universe {
         return table;
     }
 
+    // Render an existing universe
     _renderExisting() {
         // Set the size of each cell and the padding between cells
         const cellSize = 6;
         const padding = 1;
-        const size = (cellSize + padding) * UNIVERSE_SIZE
-        let universe = this
+        const size = (cellSize + padding) * UNIVERSE_SIZE;
+        let universe = this;
         let $canvas = $('<canvas width="' + size + '" height="' + size + '">');
-        let canvas = $canvas[0]
-        let ctx = canvas.getContext("2d")
+        let canvas = $canvas[0];
+        let ctx = canvas.getContext("2d");
 
         // Loop through the matrix and render each cell
         for (let row = 0; row < universe.cells.length; row++) {
@@ -229,42 +246,48 @@ class Universe {
                 ctx.fillRect(x, y, cellSize, cellSize);
             }
         }
-        return canvas
+        return canvas;
     }
 
+    // Render universe
     render() {
         if (this.isEditable) {
-            return this._renderEditable()
+            return this._renderEditable();
         }
-        return this._renderExisting()
+        return this._renderExisting();
     }
 
+    // Handle cell click event
     cellOnClickHandler(td, universe) {
-        let x = td.attr("x")
-        let y = td.attr("y")
+        let x = td.attr("x");
+        let y = td.attr("y");
         universe.cells[x][y] = !universe.cells[x][y];
         if (universe.cells[x][y]) {
-            td.css("background", universe.colour)
+            td.css("background", universe.colour);
         }
     }
 
+    // Handle cell hover in event
     cellOnHoverInHandler(td, universe) {
         if (universe.cells[td.attr("x")][td.attr("y")]) {
-            return
+            return;
         }
-        td.css("background", universe.colour)
+        td.css("background", universe.colour);
     }
 
+    // Handle cell hover out event
     cellOnHoverOutHandler(td, universe) {
         if (universe.cells[td.attr("x")][td.attr("y")]) {
-            return
+            return;
         }
-        td.css("background", EDITABLE_CELL_COLOUR)
+        td.css("background", EDITABLE_CELL_COLOUR);
     }
 }
 
+// Global variable to keep track of the last color
 let lastColor = null;
 
+// Calculate the distance between two colors
 function colorDistance(color1, color2) {
     return Math.sqrt(
         Math.pow(parseInt(color1.substr(1, 2), 16) - parseInt(color2.substr(1, 2), 16), 2) +
@@ -273,6 +296,7 @@ function colorDistance(color1, color2) {
     );
 }
 
+// Generate a random color
 function getRandomColor() {
     let letters = '0123456789ABCDEF';
     let color = '#';
@@ -296,6 +320,7 @@ function getRandomColor() {
     return color;
 }
 
+// Calculate the luminance of a color
 function getLuminance(color) {
     let r = parseInt(color.substr(1, 2), 16);
     let g = parseInt(color.substr(3, 2), 16);
@@ -304,21 +329,24 @@ function getLuminance(color) {
     return (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
 }
 
+// Create a new universe and update UI
 function newUniverse() {
-    mu.createNewUniverse(true)
+    mu.createNewUniverse(true);
     $('#wizardWrapper').html(mu.renderEditable());
 }
 
+// Initialize the application
 function initApp() {
-    const $multiverseWrapper = $('#multiverseWrapper')
-    const $wizardWrapper = $('#wizardWrapper')
+    const $multiverseWrapper = $('#multiverseWrapper');
+    const $wizardWrapper = $('#wizardWrapper');
     $multiverseWrapper.append(mu.renderExisting());
 
     // Display buttons.
-    let newButton = $("#new")
-    let saveButton = $("#save")
-    let dropButton = $("#drop")
-    let resetButton = $("#reset")
+    let newButton = $("#new");
+    let saveButton = $("#save");
+    let dropButton = $("#drop");
+    let resetButton = $("#reset");
+
     // New universe btn handler.
     newButton.show();
     newButton.on("click", () => {
@@ -327,6 +355,7 @@ function initApp() {
         saveButton.show();
         dropButton.show();
     });
+
     // Save universe btn handler.
     saveButton.on("click", () => {
         mu.saveNewUniverse();
@@ -335,6 +364,7 @@ function initApp() {
         saveButton.hide();
         dropButton.hide();
     });
+
     // Drop universe btn handler.
     dropButton.on("click", () => {
         mu.dropNewUniverse();
@@ -343,20 +373,19 @@ function initApp() {
         saveButton.hide();
         dropButton.hide();
     });
+
     // Reset universe btn handler.
     resetButton.on("click", () => {
         if (confirm("Are you sure you want to destroy everything?") == true) {
-            mu.reset()
+            mu.reset();
         }
     });
 
     // Get updates and rerender them.
-    mu.consumeUpdates(
-        () => $multiverseWrapper.html(mu.renderExisting())
-    );
+    mu.consumeUpdates(() => $multiverseWrapper.html(mu.renderExisting()));
 }
 
+// Initialize the app when the document is ready
 $(document).ready(function () {
     initApp();
 });
-

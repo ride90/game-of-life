@@ -9,14 +9,17 @@ import (
 	"net/http"
 )
 
+// HandlerAPI API requests handler
 type HandlerAPI struct {
 	config *configs.Config
 }
 
+// NewHandlerAPI creates a new instance of HandlerAPI
 func NewHandlerAPI(cfg *configs.Config) HandlerAPI {
 	return HandlerAPI{config: cfg}
 }
 
+// Health handles the health endpoint request
 func (h HandlerAPI) Health(w http.ResponseWriter, r *http.Request) {
 	err := json.NewEncoder(w).Encode("ok")
 	if err != nil {
@@ -24,8 +27,9 @@ func (h HandlerAPI) Health(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// CreateUniverse handles the creation of a new universe
 func (h HandlerAPI) CreateUniverse(w http.ResponseWriter, r *http.Request) {
-	// Get multiverse and ensure we have a space for a new universe.
+	// Get multiverse and ensure we have space for a new universe.
 	mv := multiverse.GetInstance()
 	if mv.IsFull() {
 		log.Warn("Not possible to create universe. Multiverse is full.")
@@ -58,6 +62,7 @@ func (h HandlerAPI) CreateUniverse(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 }
 
+// ResetMultiverse handles the resetting of the multiverse
 func (h HandlerAPI) ResetMultiverse(w http.ResponseWriter, r *http.Request) {
 	// Reset multiverse.
 	mv := multiverse.GetInstance()

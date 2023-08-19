@@ -7,12 +7,14 @@ import (
 	"sync"
 )
 
+// Connection represents a WebSocket connection.
 type Connection struct {
-	Conn             *websocket.Conn
+	Conn             *websocket.Conn // The underlying WebSocket connection
 	Hub              *Hub
 	readMessagesLock sync.Mutex
 }
 
+// String returns a formatted string representation of the connection.
 func (r *Connection) String() string {
 	return fmt.Sprintf(
 		"WS Connection. Remote: %s. Local: %s",
@@ -20,7 +22,9 @@ func (r *Connection) String() string {
 	)
 }
 
+// ReadMessages reads messages from the WebSocket connection.
 func (r *Connection) ReadMessages() {
+	// Lock to ensure single-threaded message reading
 	r.readMessagesLock.Lock()
 	defer r.readMessagesLock.Unlock()
 
@@ -36,10 +40,11 @@ func (r *Connection) ReadMessages() {
 		}
 	}
 
-	// Connection closed.
+	// Connection closed, remove from the hub.
 	r.Hub.RemoveConnection(r)
 }
 
+// SendMessage sends a WebSocket message with the provided data.
 func (r *Connection) SendMessage(data []byte) {
 	err := r.Conn.WriteMessage(websocket.TextMessage, data)
 	if err != nil {

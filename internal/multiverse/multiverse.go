@@ -11,23 +11,37 @@ import (
 	"time"
 )
 
+var mvCreateInstanceLock = &sync.Mutex{}
+var mvInstance *Multiverse
+
+// GetInstance retrieves or creates a singleton instance of Multiverse
+// Singleton anti-pattern is used here for learning purposes.
+func GetInstance() *Multiverse {
+	if mvInstance == nil {
+		mvCreateInstanceLock.Lock()
+		defer mvCreateInstanceLock.Unlock()
+		mvInstance = newMultiverse()
+		if mvInstance == nil {
+			mvInstance = newMultiverse()
+		}
+	}
+	return mvInstance
+}
+
+// Multiverse represents the collection of universes
 type Multiverse struct {
 	universes [24]*universe.Universe
 	count     int
-	// This lock will be used during evolve + AppendUniverse.
-	// In theory, during evolve this lock is not needed, since every universe
-	// has its own memory address and concurrent evolving of universes is totally
-	// race-condition free. Even AppendUniverse should be safe since it's only
-	// "appending" a universe to an array and there is not much of intersection
-	// with evolve, but it's better to cover AppendUniverse with a lock.
-	lock sync.Mutex
+	lock      sync.Mutex // Mutex for concurrent access control
 }
 
+// newMultiverse creates a new instance of Multiverse
 func newMultiverse() *Multiverse {
 	mu := Multiverse{}
 	return &mu
 }
 
+// AppendUniverse adds a new universe to the end of the collection
 func (r *Multiverse) AppendUniverse(u *universe.Universe) {
 	r.lock.Lock()
 	defer r.lock.Unlock()
@@ -35,6 +49,7 @@ func (r *Multiverse) AppendUniverse(u *universe.Universe) {
 	r.count++
 }
 
+// PrependUniverse adds a new universe to the beginning of the collection
 func (r *Multiverse) PrependUniverse(u *universe.Universe) {
 	r.lock.Lock()
 	defer r.lock.Unlock()
@@ -55,22 +70,18 @@ func (r *Multiverse) PrependUniverse(u *universe.Universe) {
 	r.count++
 }
 
-func (r *Multiverse) removeStaticUniverses() {
-
-	// // Remove a reference -> garbage collected.
-	// r.universes[indexToRemove] = nil
-	//
-
-}
-
+// IsFull checks if the Multiverse is full
 func (r *Multiverse) IsFull() bool {
 	return r.count >= len(r.universes)
 }
 
+// String returns a string representation of the Multiverse
 func (r *Multiverse) String() string {
 	return fmt.Sprintf("Multiverse with %d/%d universes", r.count, len(r.universes))
 }
 
+// RenderMatrices returns a string containing rendered matrices of contained universes
+// Used for stdout & debug purposes.
 func (r *Multiverse) RenderMatrices() string {
 	var matricesStringBuilder strings.Builder
 	for i, u := range r.universes {
@@ -87,6 +98,7 @@ func (r *Multiverse) RenderMatrices() string {
 	return matricesStringBuilder.String()
 }
 
+// Evolve evolves all universes in the Multiverse
 func (r *Multiverse) Evolve(cfg *configs.Config) {
 	// Lock & Unlock.
 	r.lock.Lock()
@@ -94,7 +106,7 @@ func (r *Multiverse) Evolve(cfg *configs.Config) {
 		r.lock.Unlock()
 	}()
 
-	// Each universe evolves itself in goroutine.
+	// Each universe evolves itself in a goroutine.
 	var wg sync.WaitGroup
 	for _, u := range r.universes {
 		if u == nil {
@@ -141,31 +153,14 @@ func (r *Multiverse) Evolve(cfg *configs.Config) {
 	}
 }
 
+// Reset clears the Multiverse
 func (r *Multiverse) Reset() {
 	log.Infoln("Reset multiverse", r)
 	r.universes = [24]*universe.Universe{}
 	r.count = 0
 }
 
+// ToJSON serializes the Multiverse to JSON format
 func (r *Multiverse) ToJSON() ([]byte, error) {
 	return json.Marshal(r.universes[:r.count])
-}
-
-// Create an empty multiverse.
-// This variable will be accessible from multiple places/goroutines.
-// Lock is used to avoid a race-conditions.
-var mvCreateInstanceLock = &sync.Mutex{}
-var mvInstance *Multiverse
-
-func GetInstance() *Multiverse {
-	// Singleton anti-pattern is used rather for learning purpose (works fine btw).
-	if mvInstance == nil {
-		mvCreateInstanceLock.Lock()
-		defer mvCreateInstanceLock.Unlock()
-		mvInstance = newMultiverse()
-		if mvInstance == nil {
-			mvInstance = newMultiverse()
-		}
-	}
-	return mvInstance
 }

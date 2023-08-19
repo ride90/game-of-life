@@ -9,11 +9,13 @@ import (
 	"time"
 )
 
+// HandlerWS handles WebSocket connections
 type HandlerWS struct {
-	upgrader websocket.Upgrader
+	upgrader websocket.Upgrader // Upgrader for upgrading HTTP connections to WebSocket connections
 	config   *configs.Config
 }
 
+// NewHandlerWS creates a new instance of HandlerWS with the provided configuration
 func NewHandlerWS(cfg *configs.Config) HandlerWS {
 	return HandlerWS{
 		config: cfg,
@@ -21,11 +23,12 @@ func NewHandlerWS(cfg *configs.Config) HandlerWS {
 			WriteBufferSize:  cfg.Server.WsWriteBufferSize,
 			ReadBufferSize:   cfg.Server.WsReadBufferSize,
 			HandshakeTimeout: time.Duration(cfg.Server.WsHandshakeTimeout) * time.Second,
-			CheckOrigin:      func(r *http.Request) bool { return true },
+			CheckOrigin:      func(r *http.Request) bool { return true }, // Allow all origins
 		},
 	}
 }
 
+// NewConnection upgrades an HTTP connection to a WebSocket connection and adds it to the hub
 func (h HandlerWS) NewConnection(w http.ResponseWriter, r *http.Request, wsHub *ws.Hub) {
 	// Upgrade this connection to a WebSocket connection.
 	conn, err := h.upgrader.Upgrade(w, r, nil)
@@ -37,6 +40,6 @@ func (h HandlerWS) NewConnection(w http.ResponseWriter, r *http.Request, wsHub *
 	wsConn := &ws.Connection{Conn: conn, Hub: wsHub}
 	wsHub.AddConnection(wsConn)
 
-	// Start reading messages.
+	// Start reading messages from the connection.
 	wsConn.ReadMessages()
 }

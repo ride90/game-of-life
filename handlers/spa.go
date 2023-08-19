@@ -6,25 +6,25 @@ import (
 	"path/filepath"
 )
 
-// HandlerSPA implements the http.Handler interface, so we can use it
-// to respond to HTTP requests. The path to the web directory and
-// path to the index file within that web directory are used to
-// serve the SPA in the given web directory.
+// HandlerSPA implements the http.Handler interface to serve a Single Page Application (SPA).
+// It responds to HTTP requests using the given staticPath as the root path for the web directory
+// and indexPath as the index file within that web directory.
 type HandlerSPA struct {
-	staticPath string
-	indexPath  string
+	staticPath string // The path to the root of the web directory
+	indexPath  string // The path to the index file within the web directory
 }
 
+// NewHandlerSPA creates a new instance of HandlerSPA with the provided staticPath and indexPath.
 func NewHandlerSPA(staticPath, indexPath string) HandlerSPA {
 	return HandlerSPA{staticPath: staticPath, indexPath: indexPath}
 }
 
+// ServeHTTP serves the HTTP request by serving static files and the SPA.
 func (receiver HandlerSPA) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// Get the absolute path to prevent directory traversal.
 	path, err := filepath.Abs(r.URL.Path)
 	if err != nil {
-		// if we failed to get the absolute path respond with a 400 bad request
-		// and stop
+		// If we failed to get the absolute path, respond with a 400 bad request and stop.
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
@@ -44,6 +44,6 @@ func (receiver HandlerSPA) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Otherwise, use http.FileServer to serve the web dir
+	// Otherwise, use http.FileServer to serve the web directory.
 	http.FileServer(http.Dir(receiver.staticPath)).ServeHTTP(w, r)
 }

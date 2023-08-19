@@ -7,6 +7,7 @@ import (
 	"os"
 )
 
+// Config Struct to hold configuration values
 type Config struct {
 	Server struct {
 		Debug              bool   `yaml:"debug", envconfig:"SERVER_DEBUG"`
@@ -31,6 +32,7 @@ type Config struct {
 	} `yaml:"log"`
 }
 
+// NewConfig creates a new Config instance with defaults from yml and updates from env vars
 func NewConfig() *Config {
 	var cfg Config
 
@@ -57,6 +59,7 @@ func NewConfig() *Config {
 	return &cfg
 }
 
+// handleError stdout error and exits
 func handleError(err error) {
 	fmt.Println(err)
 	os.Exit(2)
