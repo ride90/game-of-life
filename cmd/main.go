@@ -1,5 +1,8 @@
 package main
 
+// TODO: Refactor
+// 	- Add return/handle errors in places where it makes sense.
+
 import (
 	"fmt"
 	"github.com/gorilla/mux"
@@ -46,6 +49,7 @@ func main() {
 	routerAPI.HandleFunc("/health", apiHandler.Health).Methods(http.MethodGet)
 	routerAPI.HandleFunc("/universe", apiHandler.CreateUniverse).Methods(http.MethodPost)
 	routerAPI.HandleFunc("/bigbang", apiHandler.ResetMultiverse).Methods(http.MethodPost)
+	routerAPI.HandleFunc("/merge", apiHandler.MergeUniverses).Methods(http.MethodPost)
 
 	// WS handler.
 	wsHandler := handlers.NewHandlerWS(cfg)

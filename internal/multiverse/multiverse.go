@@ -6,9 +6,15 @@ import (
 	"github.com/ride90/game-of-life/configs"
 	"github.com/ride90/game-of-life/internal/universe"
 	log "github.com/sirupsen/logrus"
+	"math"
 	"strings"
 	"sync"
 	"time"
+)
+
+const (
+	universesPerRow      = 4
+	mergedUniverseColour = "#F00"
 )
 
 var mvCreateInstanceLock = &sync.Mutex{}
@@ -158,6 +164,70 @@ func (r *Multiverse) Reset() {
 	log.Infoln("Reset multiverse", r)
 	r.universes = [24]*universe.Universe{}
 	r.count = 0
+}
+
+// Merge merges all universes together into one big madness
+func (r *Multiverse) Merge() {
+	// Lock & Unlock.
+	r.lock.Lock()
+	defer func() {
+		r.lock.Unlock()
+	}()
+
+	// Check if it makes sense to perform merge
+	if r.count <= 1 {
+		log.Warn("Merge doesn't make sense", r)
+		return
+	}
+
+	log.Infoln("Performing universes merge", r)
+
+	// Create matrix to fit all universes.
+	normalMatrixSize := len(r.universes[0].Matrix[0])
+	var finalMatrix [][]bool
+	finalMatrixHeight := int(math.Ceil(float64(r.count)/universesPerRow)) * normalMatrixSize
+	finalMatrixWidth := normalMatrixSize * universesPerRow
+	finalMatrix = make([][]bool, finalMatrixHeight)
+	for i := range finalMatrix {
+		finalMatrix[i] = make([]bool, finalMatrixWidth)
+	}
+
+	// Fit "normal" matrices into a "big" final one.
+	// Having 3 nested loops is fine here since we are merging array of
+	// into one matrix. It's happening only once when merge is triggered.
+	var finalX, finalY = 0, 0
+	for indexUniverse, universe := range r.universes {
+		if universe == nil {
+			break
+		}
+		if indexUniverse%universesPerRow == 0 {
+			finalX = 0
+		} else {
+			finalY = indexUniverse / universesPerRow * normalMatrixSize
+		}
+
+		for y := range universe.Matrix {
+			for x := range universe.Matrix[y] {
+				finalMatrix[finalY][finalX] = universe.Matrix[y][x]
+				finalX++
+			}
+			finalY++
+			finalX = (indexUniverse % universesPerRow) * 50
+		}
+	}
+
+	// Create a universe which will keep all universes inside
+	finalUniverse := universe.Universe{
+		Colour: mergedUniverseColour,
+		Matrix: finalMatrix,
+	}
+
+	// Reset multiverse -> remove all universes & reset count
+	r.Reset()
+
+	// Add final universe
+	r.universes[r.count] = &finalUniverse
+	r.count++
 }
 
 // ToJSON serializes the Multiverse to JSON format

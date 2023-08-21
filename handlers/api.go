@@ -71,3 +71,13 @@ func (h HandlerAPI) ResetMultiverse(w http.ResponseWriter, r *http.Request) {
 	// Write response status.
 	w.WriteHeader(http.StatusOK)
 }
+
+// MergeUniverses handles the merging of all universes together
+func (h HandlerAPI) MergeUniverses(w http.ResponseWriter, r *http.Request) {
+
+	mv := multiverse.GetInstance()
+	mv.Merge()
+
+	// Write response status.
+	w.WriteHeader(http.StatusOK)
+}

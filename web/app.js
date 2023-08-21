@@ -79,6 +79,17 @@ class APIClient {
                 alert(error.response.data);
             });
     }
+
+    // Merge universes
+    mergeMultiverse() {
+        this.axios.post(API_URL_BASE + "/merge", {})
+            .then(function (response) {
+                console.log(response);
+            })
+            .catch(function (error) {
+                alert(error.response.data);
+            });
+    }
 }
 
 // Multiverse for managing universes
@@ -111,6 +122,11 @@ class Multiverse {
     // Reset the multiverse
     reset() {
         this.apiClient.resetMultiverse();
+    }
+
+    // Reset the multiverse
+    merge() {
+        this.apiClient.mergeMultiverse();
     }
 
     // Remove the most recently created universe
@@ -149,7 +165,7 @@ class Multiverse {
         table.addClass(containerClass);
         let row;
         for (let i = 0; i < universes.length; i++) {
-            if (i % 4 === 0) {
+            if (i % 4 === 0 || universes[i].cells[0].length > UNIVERSE_SIZE) {
                 row = $('<tr>');
             }
             let td = $('<td>');
@@ -227,9 +243,10 @@ class Universe {
         // Set the size of each cell and the padding between cells
         const cellSize = 6;
         const padding = 1;
-        const size = (cellSize + padding) * UNIVERSE_SIZE;
         let universe = this;
-        let $canvas = $('<canvas width="' + size + '" height="' + size + '">');
+        const height = (cellSize + padding) * universe.cells.length;
+        const width = (cellSize + padding) * universe.cells[0].length;
+        let $canvas = $('<canvas width="' + width + '" height="' + height + '">');
         let canvas = $canvas[0];
         let ctx = canvas.getContext("2d");
 
@@ -286,18 +303,18 @@ class Universe {
 
 // List of predefined bright colors
 const brightColors = [
-    "#fa725a", // Orange
-    "#FDCB58", // Yellow
-    "#7DCEA0", // Green
-    "#3498DB", // Blue
-    "#9B59B6", // Purple
-    "#1ABC9C", // Turquoise
-    "#2ECC71", // Emerald
-    "#27AE60", // Nephritis
-    "#16A085", // Green Sea
-    "#2980B9", // Peter River
-    "#8E44AD", // Wisteria
-    "#2C3E50"  // Midnight Blue
+    "#fa725a",
+    "#FDCB58",
+    "#1738ea",
+    "#0099ff",
+    "#ffa0ab",
+    "#cd09ec",
+    "#ff9507",
+    "#a1ff6c",
+    "#0cf632",
+    "#5b09fa",
+    "#cd60f8",
+    "#0277fd"
 ];
 
 // Global variable to keep track of the last color index
@@ -344,6 +361,7 @@ function initApp() {
     let saveButton = $("#save");
     let dropButton = $("#drop");
     let resetButton = $("#reset");
+    let mergeButton = $("#merge");
 
     // New universe btn handler.
     newButton.show();
@@ -376,6 +394,13 @@ function initApp() {
     resetButton.on("click", () => {
         if (confirm("Are you sure you want to destroy everything?") == true) {
             mu.reset();
+        }
+    });
+
+    // Reset universe btn handler.
+    mergeButton.on("click", () => {
+        if (confirm("Make a big mess?") == true) {
+            mu.merge();
         }
     });
 

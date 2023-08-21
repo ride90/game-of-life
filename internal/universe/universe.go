@@ -84,7 +84,7 @@ func (r *Universe) Evolve() {
 	}
 	r.matrixHash = matrixHash
 
-	// Create a second matrix.
+	// Create a second matrix which represents a next generation.
 	var nextGenMatrix [][]bool
 	nextGenMatrix = make([][]bool, len(r.Matrix))
 	for i := range nextGenMatrix {
