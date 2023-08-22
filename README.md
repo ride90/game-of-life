@@ -9,7 +9,7 @@
 - Render updates in the browser as canvas.
 - Concurrent evolution of each universe (spawn a virtual thread per universe).
 
-  ![video demo]([link](https://raw.githubusercontent.com/ride90/game-of-life/master/static/demo.mp4))
+  [Demo video]([https://www.google.com](https://raw.githubusercontent.com/ride90/game-of-life/master/static/demo.mp4))
 
 ## Installation
 `go mod tidy`
