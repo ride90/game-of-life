@@ -16,4 +16,4 @@
 `go run cmd/main.go`
 
 ## TODO
-- Rendering in the browser is not efficient -> generate video on server side and stream it to the browser.
+- Rendering in the browser is inefficient -> generate a video on the server side and stream it to the browser.
