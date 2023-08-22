@@ -9,6 +9,9 @@
 - Render updates in the browser as canvas.
 - Concurrent evolution of each universe (spawn a virtual thread per universe).
 
+## Installation
+`go mod tidy`
+
 ## Run
 `go run cmd/main.go`
 
