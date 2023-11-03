@@ -2,9 +2,11 @@
 const UNIVERSE_SIZE = 50;
 const DEAD_CELL_COLOUR = "#2c2c2c";
 const EDITABLE_CELL_COLOUR = "#434343";
-const API_URL_BASE = "http://127.0.0.1:4000/api";
 const API_REQUEST_TIMEOUT = 5000;
-const WS_UPDATES_URL = "ws://127.0.0.1:4000/ws/updates";
+
+// Next 2 lines are pretty damn sad, but I don't care tbh.
+const API_URL_BASE = window.location.protocol + "//" + window.location.host + "/api";
+const WS_UPDATES_URL = ((window.location.protocol === "https:") ? "wss://" : "ws://") + window.location.host + "/ws/updates";
 
 // APIClient for making HTTP and WebSocket requests
 class APIClient {
