@@ -43,5 +43,7 @@ USER executor
 
 EXPOSE 4000
 
+WORKDIR /home/executor/app
+
 # Dubug with: CMD ["sleep","3600"]
-CMD ["./app/cmd/game"]
+CMD ["./cmd/game"]

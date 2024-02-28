@@ -1,7 +1,11 @@
 # Server configurations
 server:
   debug: false
-  host: "127.0.0.1"
+  # Listen on 0.0.0.0 rather than 127.0.0.1.
+  # Listening on 127.0.0.1 (localhost) inside the container means it won't
+  # accept connections from outside the container, including from your
+  # host machine.
+  host: "0.0.0.0"
   port: 4000
   write_timeout: 15
   read_timeout: 15
