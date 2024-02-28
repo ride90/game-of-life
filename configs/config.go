@@ -37,7 +37,7 @@ func NewConfig() *Config {
 	var cfg Config
 
 	// Read default.yml file
-	f, err := os.Open("./configs/default.yml")
+	f, err := os.Open("configs/default.yml")
 	if err != nil {
 		handleError(err)
 	}
