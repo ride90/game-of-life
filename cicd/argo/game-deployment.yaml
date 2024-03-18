@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: game-deployment
-#  namespace: ridelink-game
+  namespace: argocd-game
 spec:
   replicas: 1
   selector:
