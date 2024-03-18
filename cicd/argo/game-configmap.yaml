@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: game-config
+#  namespace: ridelink-game
+data:
+  GAME_FPS: "12"

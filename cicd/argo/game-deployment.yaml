@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: game-deployment
+#  namespace: ridelink-game
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: game
+  template:
+    metadata:
+      labels:
+        app: game
+    spec:
+      containers:
+        - name: game-server
+          image: game:latest
+          # the kubelet does not try fetching the image.
+          # If the image is somehow already present locally, the kubelet
+          # attempts to start the container; otherwise, startup fails.
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 4000
+          env:
+            - name: GAME_FPS
+              valueFrom:
+                configMapKeyRef:
+                  name: game-config
+                  key: GAME_FPS
